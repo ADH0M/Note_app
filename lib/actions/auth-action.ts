@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use server";
 import { redirect } from "next/navigation";
-import { cookies } from "next/headers";
 import prisma from "../db/db-connection";
 import bcrypt from "bcryptjs";
+import { createSession, destroySession } from "./session";
 
 type SignupFormState = {
   message?: string;
@@ -127,8 +127,6 @@ export async function loginUpAction(
   }
 
   try {
-    const cookieStore = await cookies();
-
     const user = await prisma.user.findUnique({ where: { email } });
     if (!user) {
       return { errors: { general: "Invalid credentials" } };
@@ -139,30 +137,13 @@ export async function loginUpAction(
       return { errors: { general: "Invalid credentials" } };
     }
 
-    const expireDate = new Date(Date.now() + 1000 * 60 * 60 * 24 * 7);
-    const userSession = JSON.stringify({
-      userId: user.id,
+    await createSession({
+      id: user.id,
       username: user.username,
       email: user.email,
       phone: user.phone,
-      role: user.type,
-      expireSesion: expireDate.toISOString(),
+      type: user.type,
     });
-
-    const sessionToken = Buffer.from(userSession).toString("base64");
-    cookieStore.set("session", sessionToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      expires: expireDate,
-      sameSite: "strict",
-      path: "/",
-    });
-
-    cookieStore.set("userId", user.id);
-    cookieStore.set("email", user.email);
-    cookieStore.set("username", user.username);
-    cookieStore.set("role", user.type);
-
   } catch (error: any) {
     console.error("Login error:", error);
     return {
@@ -178,14 +159,127 @@ export async function loginUpAction(
 
 export async function logoutAction() {
   try {
-    const cookieStore = await cookies();
-    cookieStore.delete("session");
-    cookieStore.delete("userId");
-    cookieStore.delete("email");
-    cookieStore.delete("username");
-    cookieStore.delete("role");
+    await destroySession();
   } catch (error: any) {
     console.error("Logout error:", error);
   }
   redirect("/login");
+}
+
+type ResetRequestState = {
+  message?: string;
+  errors?: {
+    email?: string[];
+    general?: string;
+  };
+};
+
+export async function requestPasswordReset(
+  prevState: ResetRequestState,
+  formData: FormData
+): Promise<ResetRequestState> {
+  const email = formData.get("email") as string;
+
+  const errors: {
+    email?: string[];
+    general?: string;
+  } = {};
+
+  const emailRegex = /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/;
+  if (!email || !emailRegex.test(email)) {
+    errors.email = ["Please enter a valid email address."];
+    return { message: "Validation failed.", errors };
+  }
+
+  try {
+    const user = await prisma.user.findUnique({ where: { email } });
+    
+    if (!user) {
+      return { message: "If the email exists, a reset link has been sent." };
+    }
+
+    const token = crypto.randomUUID();
+    const expiresAt = new Date(Date.now() + 1000 * 60 * 60);
+
+    await prisma.passwordReset.create({
+      data: {
+        email,
+        token,
+        expiresAt,
+        userId: user.id,
+      },
+    });
+
+    console.log(`Password reset link: /reset-password?token=${token}`);
+    
+    return { message: "If the email exists, a reset link has been sent." };
+  } catch (error: any) {
+    console.error("Password reset error:", error);
+    return { message: "Something went wrong. Please try again." };
+  }
+}
+
+export async function resetPassword(token: string, newPassword: string) {
+  if (!token || !newPassword || newPassword.length < 6) {
+    throw new Error("Invalid token or password");
+  }
+
+  try {
+    const reset = await prisma.passwordReset.findUnique({
+      where: { token },
+    });
+
+    if (!reset) {
+      throw new Error("Invalid reset token");
+    }
+
+    if (reset.expiresAt < new Date()) {
+      throw new Error("Reset token has expired");
+    }
+
+    if (reset.used) {
+      throw new Error("Reset token already used");
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    await prisma.user.update({
+      where: { id: reset.userId },
+      data: { password: hashedPassword },
+    });
+
+    await prisma.passwordReset.update({
+      where: { id: reset.id },
+      data: { used: true },
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Password reset failed:", error);
+    throw error;
+  }
+}
+
+export async function verifyResetToken(token: string) {
+  if (!token) {
+    throw new Error("Token required");
+  }
+
+  const reset = await prisma.passwordReset.findUnique({
+    where: { token },
+  });
+
+  if (!reset) {
+    throw new Error("Invalid token");
+  }
+
+  if (reset.expiresAt < new Date()) {
+    throw new Error("Token expired");
+  }
+
+  if (reset.used) {
+    throw new Error("Token already used");
+  }
+
+  return { valid: true, email: reset.email };
 }

@@ -31,20 +31,26 @@ export async function createProject(
 export async function updateProject(
   projectId: string,
   userId: string,
-  title: string
+  title: string,
+  type?: "todo" | "project_tracker" | "meeting_notes" | "task_tracker"
 ) {
   if (!projectId || !userId) {
-    redirect("/");
+    throw new Error("Project ID and User ID are required");
   }
 
   if (!title || title.length <= 2) {
     return;
   }
 
-  await prisma.project.update({
-    where: { id: projectId, userId },
-    data: { title },
-  });
+  try {
+    await prisma.project.update({
+      where: { id: projectId, userId },
+      data: { title, ...(type && { type }) },
+    });
+  } catch (error) {
+    console.error("Failed to update project:", error);
+    throw error;
+  }
   revalidatePath("/", "layout");
 }
 
@@ -76,6 +82,12 @@ export async function getProjects(userId: string) {
         type: true,
         createdAt: true,
         userId: true,
+        _count: {
+          select: {
+            tasks: true,
+            notes: true,
+          },
+        },
       },
     });
     revalidateTag("projects", "max");
@@ -145,5 +157,64 @@ export async function getProject(userId: string, projectId: string) {
   } catch (err) {
     console.error("Error fetching projects:", err);
     throw new Error("Could not fetch projects");
+  }
+}
+
+export async function getColumns(projectId: string) {
+  if (!projectId) {
+    return [];
+  }
+
+  try {
+    const columns = await prisma.column.findMany({
+      where: { projectId },
+      orderBy: { order: "asc" },
+      select: {
+        id: true,
+        title: true,
+        order: true,
+        projectId: true,
+      },
+    });
+    return columns;
+  } catch (error) {
+    console.error("Failed to get columns:", error);
+    return [];
+  }
+}
+
+export async function getOrCreateDefaultColumns(projectId: string) {
+  const defaultColumns = [
+    { id: "todo", title: "To Do", order: 1 },
+    { id: "in_progress", title: "In Progress", order: 2 },
+    { id: "review", title: "Review", order: 3 },
+    { id: "done", title: "Done", order: 4 },
+  ];
+
+  try {
+    const existing = await prisma.column.findMany({
+      where: { projectId },
+      orderBy: { order: "asc" },
+    });
+
+    if (existing.length === 0) {
+      const created = await prisma.column.createMany({
+        data: defaultColumns.map((col) => ({
+          ...col,
+          projectId,
+        })),
+      });
+      return defaultColumns;
+    }
+
+    return existing.map((c) => ({
+      id: c.id,
+      title: c.title,
+      order: c.order,
+      projectId: c.projectId,
+    }));
+  } catch (error) {
+    console.error("Failed to get/create columns:", error);
+    return defaultColumns;
   }
 }

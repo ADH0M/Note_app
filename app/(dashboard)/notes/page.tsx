@@ -6,7 +6,7 @@ import Columns from "@/components/ui/Columns";
 
 async function getData(userId: string) {
   const columns = await prisma.column.findMany({
-    where: { userId },
+    where: { id:userId  },
     include: {
       tasks: true,
     },

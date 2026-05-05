@@ -1,20 +1,53 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { jwtVerify } from "jose";
 
-export function proxy(request: NextRequest) {
-  const session = request.cookies.get("session")?.value;
-  const role = request.cookies.get("role")?.value;
+const JWT_SECRET = new TextEncoder().encode(
+  process.env.JWT_SECRET || "your-super-secret-key-change-in-production"
+);
 
-  // Protect Admin Routes
-  if (request.nextUrl.pathname.startsWith("/admin")) {
-    if (!session || role !== "admin") {
-      return NextResponse.redirect(new URL("/", request.url));
-    }
+function isPublicPath(pathname: string): boolean {
+  const publicPaths = [
+    "/",
+    "/login",
+    "/register",
+    "/about",
+  ];
+  
+  if (publicPaths.includes(pathname)) return true;
+  
+  if (pathname.startsWith("/api")) return true;
+  if (pathname.startsWith("/_next")) return true;
+  if (pathname.startsWith("/favicon")) return true;
+  
+  return false;
+}
+
+export async function proxy(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+
+  if (isPublicPath(pathname)) {
+    return NextResponse.next();
   }
 
-  return NextResponse.next();
+  const sessionToken = request.cookies.get("session")?.value;
+
+  if (!sessionToken) {
+    const loginUrl = new URL("/login", request.url);
+    return NextResponse.redirect(loginUrl);
+  }
+
+  try {
+    await jwtVerify(sessionToken, JWT_SECRET);
+    return NextResponse.next();
+  } catch {
+    const loginUrl = new URL("/login", request.url);
+    return NextResponse.redirect(loginUrl);
+  }
 }
 
 export const config = {
-  matcher: ["/admin/:path*"],
+  matcher: [
+    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+  ],
 };

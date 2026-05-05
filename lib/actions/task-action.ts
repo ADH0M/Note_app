@@ -1,93 +1,168 @@
 "use server";
-import { redirect } from "next/navigation";
-import prisma from "../db/db-connection";
-import { revalidatePath, revalidateTag } from "next/cache";
+import prisma from "@/lib/db/db-connection";
+import { revalidatePath } from "next/cache";
+import { getSession } from "./session";
 
-export async function createTask(userId: string, order: number, title: string) {
-  if (!userId) redirect("/login");
-  if (!order) {
-    order = 10000;
+export async function createTask(
+  projectId: string,
+  title: string,
+  columnId?: string,
+  priority?: string,
+  dueDate?: Date
+) {
+  const session = await getSession();
+  if (!session) throw new Error("Unauthorized");
+  const userId = session.userId;
+  
+  if (!userId || !title || !projectId) {
+    throw new Error("Missing required fields");
   }
-  if (title) return;
 
   try {
-    await prisma.project.create({
+    const task = await prisma.task.create({
       data: {
         title,
         userId,
-        order: order + 2000,
+        projectId,
+        columnId,
+        state: false,
+        order: Date.now(),
+        priority: priority as any || "medium",
+        dueDate,
       },
     });
-  } catch (error) {}
-
-  revalidatePath("/(tasks-system)/", "layout");
-  revalidatePath("/", "layout");
+    revalidatePath(`/projects/${projectId}`);
+    return task;
+  } catch (error) {
+    console.error("Failed to create task:", error);
+    throw error;
+  }
 }
 
 export async function updateTask(
   taskId: string,
-  userId: string,
-  title: string
+  data: {
+    title?: string;
+    completed?: boolean;
+    columnId?: string;
+    priority?: string;
+    dueDate?: Date;
+  }
 ) {
-  if (!taskId || !userId) {
-    redirect("/");
+  const session = await getSession();
+  if (!session) throw new Error("Unauthorized");
+  const userId = session.userId;
+  
+  if (!userId || !taskId) {
+    throw new Error("Missing required fields");
   }
 
-  if (!title || title.length <= 2) {
-    return;
+  try {
+    const updateData: { title?: string; state?: boolean; columnId?: string; priority?: any; dueDate?: Date } = {};
+    if (data.title !== undefined) updateData.title = data.title;
+    if (data.completed !== undefined) updateData.state = data.completed;
+    if (data.columnId !== undefined) updateData.columnId = data.columnId;
+    if (data.priority !== undefined) updateData.priority = data.priority as any;
+    if (data.dueDate !== undefined) updateData.dueDate = data.dueDate;
+    
+    await prisma.task.update({
+      where: { id: taskId, userId },
+      data: updateData,
+    });
+    
+    const task = await prisma.task.findUnique({ where: { id: taskId } });
+    if (task) {
+      revalidatePath(`/projects/${task.projectId}`);
+    }
+  } catch (error) {
+    console.error("Failed to update task:", error);
+    throw error;
   }
-
-  await prisma.project.update({
-    where: { id: taskId, userId },
-    data: { title },
-  });
-  revalidatePath("/", "layout");
 }
 
-export async function deleteTask(
-  userId: string,
-  projectId: string,
-  taskId: string
-) {
-  if (!projectId || !userId) {
-    redirect("/");
+export async function deleteTaskAction(taskId: string) {
+  const session = await getSession();
+  if (!session) throw new Error("Unauthorized");
+  const userId = session.userId;
+  
+  if (!userId || !taskId) {
+    throw new Error("Missing required fields");
   }
 
-  if (!taskId) return;
-
-  await prisma.task.delete({
-    where: { id: taskId, userId, projectId },
-  });
-
-  revalidatePath("/", "layout");
+  try {
+    const task = await prisma.task.findUnique({ where: { id: taskId } });
+    await prisma.task.delete({
+      where: { id: taskId, userId },
+    });
+    if (task) {
+      revalidatePath(`/projects/${task.projectId}`);
+    }
+  } catch (error) {
+    console.error("Failed to delete task:", error);
+    throw error;
+  }
 }
 
-export async function getTasks(userId: string, projectId: string) {
-  if (!userId) {
-    throw new Error("User ID is required");
+export async function updateTaskTime(taskId: string, timeSpent: number) {
+  const session = await getSession();
+  if (!session) throw new Error("Unauthorized");
+  const userId = session.userId;
+  
+  if (!userId || !taskId) {
+    throw new Error("Missing required fields");
+  }
+
+  try {
+    await prisma.task.update({
+      where: { id: taskId, userId },
+      data: { timeSpent },
+    });
+  } catch (error) {
+    console.error("Failed to update task time:", error);
+    throw error;
+  }
+}
+
+export async function getTasksForProject(projectId: string, columnId?: string) {
+  if (!projectId) {
+    return [];
   }
 
   try {
     const tasks = await prisma.task.findMany({
-      where: { userId, projectId },
-      orderBy: { order: "asc" },
+      where: {
+        projectId,
+        ...(columnId && { columnId }),
+      },
+      orderBy: { createdAt: "desc" },
       select: {
         id: true,
-        order: true,
         title: true,
-        createdAt: true,
-        userId: true,
         state: true,
+        createdAt: true,
+        projectId: true,
+        columnId: true,
+        priority: true,
+        dueDate: true,
+        timeSpent: true,
+        hourlyRate: true,
       },
     });
-    revalidateTag("projects", "max");
 
-    return tasks.map((pr) => ({
-      ...pr,
-      createdAt: pr.createdAt.toISOString(),
+    return tasks.map((t) => ({
+      id: t.id,
+      title: t.title,
+      completed: t.state,
+      createdAt: t.createdAt,
+      projectId: t.projectId,
+      columnId: t.columnId,
+      priority: t.priority,
+      dueDate: t.dueDate,
+      timeSpent: t.timeSpent,
+      hourlyRate: t.hourlyRate,
     }));
-  } catch (err) {
-    console.error("Error fetching task:", err);
-    throw new Error("Could not fetch projects");
+  } catch (error) {
+    console.error("Failed to get tasks:", error);
+    return [];
   }
 }

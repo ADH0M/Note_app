@@ -68,13 +68,18 @@ model Task {
   title    String
   content  String?
   favorite Boolean @default(false)
-  state    Boolean @default(false) // is completed
+  state    Boolean @default(false)
   order    Float   @default(0)
+  priority Priority @default(medium)
+  dueDate  DateTime?
+  startDate DateTime?
+  timeSpent Int @default(0)
+  hourlyRate Float?
 
   projectId String  @db.ObjectId
   project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
-  columnId String? @db.ObjectId // null = normal todo/task
+  columnId String? @db.ObjectId
   column   Column? @relation(fields: [columnId], references: [id], onDelete: Cascade)
 
   userId String @db.ObjectId
@@ -88,6 +93,13 @@ model Task {
   @@index([userId])
 }
 
+enum Priority {
+  low
+  medium
+  high
+  urgent
+}
+
 model Note {
   id        String  @id @default(auto()) @map("_id") @db.ObjectId
   title     String
@@ -97,6 +109,11 @@ model Note {
 
   userId String @db.ObjectId
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  meetingDate DateTime?
+  attendees  String[]
+  tags       String[]
+  actionItems Json?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -128,4 +145,17 @@ enum ProjectType {
 enum UserType {
   customer
   admin
+}
+
+model PasswordReset {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @db.ObjectId
+  email     String
+  token     String   @unique
+  expiresAt DateTime
+  used      Boolean  @default(false)
+  
+  createdAt DateTime @default(now())
+  
+  @@index([userId])
 }

@@ -12,6 +12,14 @@ import { createProject } from "@/lib/actions/projects";
 import { cn } from "@/lib/utils";
 import { userProjects } from "@/store/reducers/project";
 
+type ProjectType = "todo" | "project_tracker" | "meeting_notes" | "task_tracker";
+
+const projectTypes: { type: ProjectType; label: string; shortcut: string }[] = [
+  { type: "todo", label: "Todo", shortcut: "⌘T" },
+  { type: "task_tracker", label: "Task Tracker", shortcut: "⌘K" },
+  { type: "project_tracker", label: "Project Tracker", shortcut: "⌘P" },
+  { type: "meeting_notes", label: "Meeting Notes", shortcut: "⌘M" },
+];
 
 const NewProjectBtn = ({
   className,
@@ -21,7 +29,7 @@ const NewProjectBtn = ({
   sideOffset = 4,
   alignOffset = 0,
   userId,
-  order=1000,
+  order = 1000,
 }: {
   className: string;
   newClassName?: string;
@@ -30,10 +38,17 @@ const NewProjectBtn = ({
   sideOffset?: number;
   alignOffset?: number;
   userId: string | undefined;
-  order:number;
+  order: number;
 }) => {
+  const dispatch = useDispatchHook();
 
-  const dispatch =useDispatchHook();
+  const handleCreateProject = async (type: ProjectType) => {
+    if (userId) {
+      await createProject(type, userId, order);
+      dispatch(userProjects(userId));
+    }
+  };
+
   return (
     <Menubar className={className}>
       <MenubarMenu>
@@ -48,30 +63,18 @@ const NewProjectBtn = ({
             newClassName
           )}
         >
-          <MenubarItem
-            className="p-1 md:p-3"
-            onClick={async () => {
-              const type = "todo";
-              if (userId) {
-                await createProject(type, userId,order)
-                dispatch(userProjects(userId));
-              };
-            }}
-          >
-            Todo
-            <MenubarShortcut>⌘default</MenubarShortcut>
-          </MenubarItem>
-
-          <MenubarSeparator />
-          <MenubarItem className="p-1 md:p-3">Task Tracker</MenubarItem>
-          <MenubarSeparator />
-
-          <MenubarItem className="p-1 md:p-3">
-            Project Tracker <MenubarShortcut>⌘Kanban</MenubarShortcut>
-          </MenubarItem>
-
-          <MenubarSeparator />
-          <MenubarItem className="p-1 md:p-3">Meeting Notes</MenubarItem>
+          {projectTypes.map((item, index) => (
+            <div key={item.type}>
+              {index > 0 && <MenubarSeparator />}
+              <MenubarItem
+                className="p-1 md:p-3"
+                onClick={() => handleCreateProject(item.type)}
+              >
+                {item.label}
+                <MenubarShortcut>{item.shortcut}</MenubarShortcut>
+              </MenubarItem>
+            </div>
+          ))}
         </MenubarContent>
       </MenubarMenu>
     </Menubar>

@@ -2,26 +2,20 @@
 
 import prisma from "@/lib/db/db-connection";
 import { revalidatePath } from "next/cache";
-import { cookies } from "next/headers";
+import { getSession } from "./session";
 
-// Define UserType enum to match Prisma schema if not importing directly
-enum UserType {
-  customer = "customer",
-  admin = "admin",
-}
 
 export async function deleteUser(userId: string) {
-  const cookieStore = await cookies();
-  const role = cookieStore.get("role")?.value;
+  const session = await getSession();
+  const role = session?.role;
 
   if (role !== "admin") {
     throw new Error("Unauthorized");
   }
 
   try {
-    // Delete user's tasks and columns first (cascade delete might handle this depending on schema, but explicit is safer)
     await prisma.task.deleteMany({ where: { userId } });
-    await prisma.column.deleteMany({ where: { userId } });
+    await prisma.column.deleteMany({ where: { id:userId } });
     
     await prisma.user.delete({
       where: { id: userId },
@@ -34,8 +28,8 @@ export async function deleteUser(userId: string) {
 }
 
 export async function updateUserRole(userId: string, newRole: "admin" | "customer") {
-  const cookieStore = await cookies();
-  const role = cookieStore.get("role")?.value;
+  const session = await getSession();
+  const role = session?.role;
 
   if (role !== "admin") {
     throw new Error("Unauthorized");

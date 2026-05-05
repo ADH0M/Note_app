@@ -1,13 +1,14 @@
 "use server";
 
+import { Prisma } from "@/generated/prisma";
 import prisma from "@/lib/db/db-connection";
 import { revalidatePath } from "next/cache";
-import { cookies } from "next/headers";
+import { getSession } from "./session";
 
-export async function createColumn(order : number, formData: FormData) {
-  const title = formData.get("title") as string;
-  const cookieStore = await cookies();
-  const userId = cookieStore.get("userId")?.value;
+export async function createColumn(order: number, formData: FormData) {
+  const title = formData.get("title") as string ;
+  const session = await getSession();
+  const userId = session?.userId;
 
   if (!userId || !title) return;
 
@@ -15,8 +16,9 @@ export async function createColumn(order : number, formData: FormData) {
     await prisma.column.create({
       data: {
         title,
-        userId,
+        id: userId,
         order: 0,
+
       },
     });
     revalidatePath("/notes");
@@ -36,11 +38,14 @@ export async function deleteColumn(columnId: string) {
   }
 }
 
-export async function createTask(order : number, formData: FormData) {
+export async function createTask(
+  { order, projectId }: { order: number; projectId: string },
+  formData: FormData,
+) {
   const title = formData.get("title") as string;
   const columnId = formData.get("columnId") as string;
-  const cookieStore = await cookies();
-  const userId = cookieStore.get("userId")?.value;
+  const session = await getSession();
+  const userId = session?.userId;
 
   if (!userId || !title || !columnId) return;
 
@@ -51,6 +56,7 @@ export async function createTask(order : number, formData: FormData) {
         columnId,
         userId,
         order,
+        projectId,
       },
     });
     revalidatePath("/notes");
@@ -71,18 +77,22 @@ export async function deleteTask(taskId: string) {
 }
 
 export async function updateTaskColumn(taskId: string, newColumnId: string) {
-    try {
-        await prisma.task.update({
-            where: { id: taskId },
-            data: { columnId: newColumnId }
-        });
-        revalidatePath("/notes");
-    } catch (error) {
-        console.error("Failed to move task:", error);
-    }
+  try {
+    await prisma.task.update({
+      where: { id: taskId },
+      data: { columnId: newColumnId },
+    });
+    revalidatePath("/notes");
+  } catch (error) {
+    console.error("Failed to move task:", error);
+  }
 }
 
-export async function updateTaskPosition(taskId: string, newColumnId: string, newOrder: number) {
+export async function updateTaskPosition(
+  taskId: string,
+  newColumnId: string,
+  newOrder: number,
+) {
   try {
     await prisma.task.update({
       where: { id: taskId },
@@ -97,18 +107,149 @@ export async function updateTaskPosition(taskId: string, newColumnId: string, ne
   }
 }
 
+export type ColumnActionType = Prisma.ColumnGetPayload<{include:{tasks:true}}>
 export async function getColumnsAction(userId: string) {
   try {
     const columns = await prisma.column.findMany({
-      where: { userId },
+      where: { id: userId },
       include: {
         tasks: true,
       },
-      orderBy: { order: 'asc' }
-    });
+      orderBy: { order: "asc" },
+    }) as ColumnActionType[]
     return columns;
   } catch (error) {
     console.error("Failed to get columns:", error);
+    return [];
+  }
+}
+
+export async function createNote(
+  projectId: string,
+  data: {
+    title: string;
+    content: string;
+    meetingDate?: string;
+    attendees?: string[];
+    tags?: string[];
+  }
+) {
+  const session = await getSession();
+  const userId = session?.userId;
+  
+  if (!userId || !projectId || !data.title || !data.content) {
+    throw new Error("Missing required fields");
+  }
+
+  try {
+    const note = await prisma.note.create({
+      data: {
+        title: data.title,
+        content: data.content,
+        projectId,
+        userId,
+        meetingDate: data.meetingDate ? new Date(data.meetingDate) : undefined,
+        attendees: data.attendees || [],
+        tags: data.tags || [],
+      },
+    });
+    revalidatePath(`/projects/${projectId}`);
+    return {
+      id: note.id,
+      title: note.title,
+      content: note.content,
+      meetingDate: note.meetingDate,
+      attendees: note.attendees,
+      tags: note.tags,
+      createdAt: note.createdAt,
+      projectId: note.projectId,
+    };
+  } catch (error) {
+    console.error("Failed to create note:", error);
+    throw error;
+  }
+}
+
+export async function updateNote(
+  noteId: string,
+  data: {
+    title?: string;
+    content?: string;
+    meetingDate?: string;
+    attendees?: string[];
+    tags?: string[];
+  }
+) {
+  const session = await getSession();
+  const userId = session?.userId;
+  
+  if (!userId || !noteId) {
+    throw new Error("Missing required fields");
+  }
+
+  try {
+    await prisma.note.update({
+      where: { id: noteId, userId },
+      data: {
+        ...(data.title && { title: data.title }),
+        ...(data.content && { content: data.content }),
+        ...(data.meetingDate !== undefined && { meetingDate: data.meetingDate ? new Date(data.meetingDate) : null }),
+        ...(data.attendees && { attendees: data.attendees }),
+        ...(data.tags && { tags: data.tags }),
+      },
+    });
+    revalidatePath(`/projects/${(await prisma.note.findUnique({ where: { id: noteId } }))?.projectId}`);
+  } catch (error) {
+    console.error("Failed to update note:", error);
+    throw error;
+  }
+}
+
+export async function deleteNote(noteId: string) {
+  const session = await getSession();
+  const userId = session?.userId;
+  
+  if (!userId || !noteId) {
+    throw new Error("Missing required fields");
+  }
+
+  try {
+    const note = await prisma.note.findUnique({ where: { id: noteId } });
+    await prisma.note.delete({
+      where: { id: noteId, userId },
+    });
+    if (note) {
+      revalidatePath(`/projects/${note.projectId}`);
+    }
+  } catch (error) {
+    console.error("Failed to delete note:", error);
+    throw error;
+  }
+}
+
+export async function getNotesForProject(projectId: string) {
+  if (!projectId) {
+    return [];
+  }
+
+  try {
+    const notes = await prisma.note.findMany({
+      where: { projectId },
+      orderBy: { createdAt: "desc" },
+    });
+
+    return notes.map((n) => ({
+      id: n.id,
+      title: n.title,
+      content: n.content,
+      meetingDate: n.meetingDate,
+      attendees: n.attendees,
+      tags: n.tags,
+      createdAt: n.createdAt,
+      projectId: n.projectId,
+    }));
+  } catch (error) {
+    console.error("Failed to get notes:", error);
     return [];
   }
 }
