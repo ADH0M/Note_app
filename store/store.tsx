@@ -1,18 +1,16 @@
 "use client";
 import { configureStore } from "@reduxjs/toolkit";
-import countReducer from "./reducers/count";
 import authReducer from "./reducers/auth";
-import kanbanReducer from "./reducers/kanbanReduce";
 import { Provider } from "react-redux";
 import { useState } from "react";
 import projectReducer from "./reducers/project";
+import openSearchSlice from "./reducers/searchSlice";
 
 const store = configureStore({
   reducer: {
-    countReducer,
-    kanbanReducer,
     authReducer,
     projectReducer,
+    openSearchSlice
   },
 });
 

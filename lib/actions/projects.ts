@@ -6,7 +6,7 @@ import { revalidatePath, revalidateTag } from "next/cache";
 export async function createProject(
   type: "todo" | "project_tracker" | "meeting_notes" | "task_tracker",
   userId: string,
-  order: number
+  order: number,
 ) {
   if (!userId) redirect("/login");
   if (!order) {
@@ -32,7 +32,7 @@ export async function updateProject(
   projectId: string,
   userId: string,
   title: string,
-  type?: "todo" | "project_tracker" | "meeting_notes" | "task_tracker"
+  type?: "todo" | "project_tracker" | "meeting_notes" | "task_tracker",
 ) {
   if (!projectId || !userId) {
     throw new Error("Project ID and User ID are required");
@@ -192,8 +192,9 @@ export async function getOrCreateDefaultColumns(projectId: string) {
   ];
 
   try {
-    const existing = await prisma.column.findMany({
-      where: { projectId },
+    //show the columns important not project
+    const existing = await prisma.project.findMany({
+      where: { id: projectId },
       orderBy: { order: "asc" },
     });
 
@@ -211,7 +212,7 @@ export async function getOrCreateDefaultColumns(projectId: string) {
       id: c.id,
       title: c.title,
       order: c.order,
-      projectId: c.projectId,
+      projectId: c.id,
     }));
   } catch (error) {
     console.error("Failed to get/create columns:", error);
