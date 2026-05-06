@@ -323,8 +323,7 @@ function ProjectCard({
           className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-muted rounded"
         >
           <div className="relative">
-            
-              <CardActions onDelete={onDelete} onEdit={onEdit}/>
+            <CardActions onDelete={onDelete} onEdit={onEdit} />
           </div>
         </div>
       </div>

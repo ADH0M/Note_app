@@ -5,6 +5,7 @@ import StoreProvider from "@/store/store";
 import { ThemeProvider } from "next-themes";
 import Navbar from "@/components/ui/Navbar";
 import { Toaster } from "@/components/ui/toaster";
+import { GlobalSearch } from "@/components/ui/GlobalSearch";
 import { cookies } from "next/headers";
 import { jwtVerify } from "jose";
 
@@ -59,6 +60,7 @@ export default async function RootLayout({
             defaultTheme="system"
             disableTransitionOnChange
           >
+            <GlobalSearch />
             {/* <Sidebar /> */}
             <Navbar user={user} />
             <main className="h-[calc(100vh-66px)] overflow-hidden">

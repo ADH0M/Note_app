@@ -2,6 +2,7 @@ import { getProject } from "@/lib/actions/projects";
 import { getOrCreateDefaultColumns } from "@/lib/actions/projects";
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/actions/session";
+import { ProjectActions } from "@/components/ui/ProjectActions";
 
 export default async function ProjectPage({
   params,
@@ -10,38 +11,29 @@ export default async function ProjectPage({
 }) {
   const { id } = await params;
   const session = await getSession();
-  
+
   if (!session) {
     redirect("/login");
   }
-  
+
   const userId = session.id;
   
   if (!id) {
     redirect("/projects");
   }
-  
+
   const project = await getProject(userId, id);
   const columns = await getOrCreateDefaultColumns(id);
 
-  const renderComponent = () => {
-    switch (project?.type) {
-      case "todo":
-        return <div>Todo View for: {project?.title}</div>;
-      case "project_tracker":
-        return <div>Project Tracker View for: {project?.title}</div>;
-      case "task_tracker":
-        return <div>Task Tracker View for: {project?.title}</div>;
-      case "meeting_notes":
-        return <div>Meeting Notes View for: {project?.title}</div>;
-      default:
-        return <div>Project: {project?.title}</div>;
-    }
-  };
-
   return (
     <div className="min-h-screen p-4 sm:p-6 bg-background">
-      {renderComponent()}
+      
+
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-2xl font-bold">{project?.title}</h1>
+         <ProjectActions projectId={id} /> 
+      </div>
+      <p className="text-muted-foreground">Project Type: {project?.type}</p>
     </div>
   );
 }
