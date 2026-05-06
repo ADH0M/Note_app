@@ -3,23 +3,29 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { 
-  FiPlus, 
-  FiFolder, 
-  FiList, 
-  FiFileText, 
-  FiEdit2, 
-  FiTrash2, 
+import {
+  FiPlus,
+  FiFolder,
+  FiList,
+  FiFileText,
+  FiEdit2,
+  FiTrash2,
   FiSearch,
   FiMoreVertical,
   FiClock,
-  FiCheckSquare
+  FiCheckSquare,
 } from "react-icons/fi";
 import { deleteProjet, getProjects } from "@/lib/actions/projects";
 import NewProjectBtn from "@/components/layout/NewProjectBtn";
 import { useSelectorHook } from "@/hooks/useSelector";
+import { CardActions } from "@/components/ui/action";
+import { toast } from "sonner";
 
-type ProjectType = "todo" | "project_tracker" | "meeting_notes" | "task_tracker";
+type ProjectType =
+  | "todo"
+  | "project_tracker"
+  | "meeting_notes"
+  | "task_tracker";
 
 interface Project {
   id: string;
@@ -34,11 +40,26 @@ interface Project {
   };
 }
 
-const projectTypeLabels: Record<ProjectType, { label: string; icon: React.ReactNode; color: string }> = {
+const projectTypeLabels: Record<
+  ProjectType,
+  { label: string; icon: React.ReactNode; color: string }
+> = {
   todo: { label: "Todo", icon: <FiCheckSquare />, color: "text-blue-500" },
-  project_tracker: { label: "Project Tracker", icon: <FiFolder />, color: "text-purple-500" },
-  meeting_notes: { label: "Meeting Notes", icon: <FiFileText />, color: "text-green-500" },
-  task_tracker: { label: "Task Tracker", icon: <FiClock />, color: "text-orange-500" },
+  project_tracker: {
+    label: "Project Tracker",
+    icon: <FiFolder />,
+    color: "text-purple-500",
+  },
+  meeting_notes: {
+    label: "Meeting Notes",
+    icon: <FiFileText />,
+    color: "text-green-500",
+  },
+  task_tracker: {
+    label: "Task Tracker",
+    icon: <FiClock />,
+    color: "text-orange-500",
+  },
 };
 
 export default function ProjectsPage() {
@@ -50,14 +71,15 @@ export default function ProjectsPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editTitle, setEditTitle] = useState("");
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
-  
+
   const { data } = useSelectorHook((state) => state.authReducer);
   const userId = data?.id;
-  
+
   const projectStore = useSelectorHook((state) => state.projectReducer);
   let order = 1000;
   if (projectStore.data && projectStore.data.length) {
-    order = Number(projectStore.data[projectStore.data?.length - 1]?.order) || 1000;
+    order =
+      Number(projectStore.data[projectStore.data?.length - 1]?.order) || 1000;
   }
 
   useEffect(() => {
@@ -83,14 +105,16 @@ export default function ProjectsPage() {
     if (!userId) return;
     try {
       await deleteProjet(userId, projectId);
-      setProjects(projects.filter(p => p.id !== projectId));
+      setProjects(projects.filter((p) => p.id !== projectId));
       setDeleteConfirm(null);
+      toast.success("Project deleted successfully");
     } catch (error) {
       console.error("Failed to delete project:", error);
+      toast.error("Failed to delete project");
     }
   };
 
-  const filteredProjects = projects.filter(p => {
+  const filteredProjects = projects.filter((p) => {
     const matchesSearch = p.title.toLowerCase().includes(search.toLowerCase());
     const matchesFilter = filter === "all" || p.type === filter;
     return matchesSearch && matchesFilter;
@@ -103,7 +127,9 @@ export default function ProjectsPage() {
   if (!userId) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <p className="text-muted-foreground">Please log in to view your projects.</p>
+        <p className="text-muted-foreground">
+          Please log in to view your projects.
+        </p>
       </div>
     );
   }
@@ -139,7 +165,15 @@ export default function ProjectsPage() {
           />
         </div>
         <div className="flex gap-2 overflow-x-auto pb-2">
-          {(["all", "todo", "project_tracker", "meeting_notes", "task_tracker"] as const).map((f) => (
+          {(
+            [
+              "all",
+              "todo",
+              "project_tracker",
+              "meeting_notes",
+              "task_tracker",
+            ] as const
+          ).map((f) => (
             <button
               key={f}
               onClick={() => setFilter(f)}
@@ -166,8 +200,8 @@ export default function ProjectsPage() {
         <div className="text-center py-16 rounded-xl border-2 border-dashed border-border">
           <FiFolder className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
           <p className="text-muted-foreground mb-4">
-            {search || filter !== "all" 
-              ? "No projects match your search" 
+            {search || filter !== "all"
+              ? "No projects match your search"
               : "No projects yet. Create your first project!"}
           </p>
           {!search && filter === "all" && (
@@ -233,7 +267,8 @@ export default function ProjectsPage() {
           <div className="bg-card border border-border p-6 rounded-xl w-full max-w-md">
             <h3 className="text-lg font-semibold mb-2">Delete Project</h3>
             <p className="text-muted-foreground mb-4">
-              Are you sure you want to delete this project? This action cannot be undone.
+              Are you sure you want to delete this project? This action cannot
+              be undone.
             </p>
             <div className="flex justify-end gap-2">
               <button
@@ -256,20 +291,24 @@ export default function ProjectsPage() {
   );
 }
 
-function ProjectCard({ 
-  project, 
-  onEdit, 
-  onDelete 
-}: { 
+function ProjectCard({
+  project,
+  onEdit,
+  onDelete,
+}: {
   project: Project;
   onEdit: () => void;
   onDelete: () => void;
 }) {
   const router = useRouter();
-  const typeInfo = projectTypeLabels[project.type] || { label: project.type, icon: <FiFolder />, color: "text-gray-500" };
-  
+  const typeInfo = projectTypeLabels[project.type] || {
+    label: project.type,
+    icon: <FiFolder />,
+    color: "text-gray-500",
+  };
+
   return (
-    <div 
+    <div
       className="group p-5 rounded-xl border border-border bg-card text-card-foreground hover:border-primary/50 transition-all cursor-pointer"
       onClick={() => router.push(`/projects/${project.id}`)}
     >
@@ -277,41 +316,22 @@ function ProjectCard({
         <div className={`p-2 rounded-lg bg-muted ${typeInfo.color}`}>
           {typeInfo.icon}
         </div>
-        <button
+        <div
           onClick={(e) => {
             e.stopPropagation();
           }}
           className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-muted rounded"
         >
           <div className="relative">
-            <FiMoreVertical />
-            <div className="absolute right-0 top-full mt-1 w-32 bg-card border border-border rounded-lg shadow-lg hidden group-hover:block z-10">
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onEdit();
-                }}
-                className="flex items-center gap-2 w-full px-3 py-2 text-sm hover:bg-muted rounded-t-lg"
-              >
-                <FiEdit2 size={14} /> Edit
-              </button>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onDelete();
-                }}
-                className="flex items-center gap-2 w-full px-3 py-2 text-sm text-destructive hover:bg-muted rounded-b-lg"
-              >
-                <FiTrash2 size={14} /> Delete
-              </button>
-            </div>
+            
+              <CardActions onDelete={onDelete} onEdit={onEdit}/>
           </div>
-        </button>
+        </div>
       </div>
-      
+
       <h3 className="font-semibold text-lg mb-1">{project.title}</h3>
       <p className="text-sm text-muted-foreground mb-4">{typeInfo.label}</p>
-      
+
       <div className="flex items-center gap-4 text-sm text-muted-foreground">
         <div className="flex items-center gap-1">
           <FiList size={14} />
@@ -322,7 +342,7 @@ function ProjectCard({
           <span>{project._count?.notes || 0} notes</span>
         </div>
       </div>
-      
+
       <p className="text-xs text-muted-foreground mt-3">
         {new Date(project.createdAt).toLocaleDateString()}
       </p>

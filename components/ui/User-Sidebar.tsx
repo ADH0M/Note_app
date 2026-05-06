@@ -24,7 +24,7 @@ type User = {
   username: string;
   email: string;
   role: string;
-  isActive: boolean;
+  phone: string;
 } | null;
 
 // ========================
@@ -39,17 +39,6 @@ function UserSidebar({
   isOpen: boolean;
   toggleSidebar: () => void;
 }) {
-  const pathname = usePathname();
-
-  const navItems = [
-    { name: "Dashboard", href: "/admin", icon: <FiHome /> },
-    { name: "Users", href: "/admin/users", icon: <FiUsers /> },
-  ];
-
-  const appItems = [
-    { name: "Create Project", icon: <FiPlus /> },
-    { name: "My Notes", icon: <FiFileText /> },
-  ];
 
   const { data } = useSelectorHook((state) => state.authReducer);
   const projects = useSelectorHook((state) => state.projectReducer);
@@ -67,7 +56,9 @@ function UserSidebar({
 
   return (
     <aside
-      className={`fixed md:sticky  md:translate-x-0 z-40 h-screen flex flex-col bg-sidebar border-r border-sidebar-border text-sidebar-foreground transition-transform duration-300 ease-in-out ${
+      className={`fixed max-h-full h-full md:sticky  md:translate-x-0 z-40  flex 
+        flex-col bg-sidebar border-r border-sidebar-border text-sidebar-foreground
+         transition-transform duration-300 ease-in-out ${
         isOpen ? "translate-x-0" : "-translate-x-full"
       } w-64 md:w-64`}
     >
@@ -109,70 +100,25 @@ function UserSidebar({
         </div>
       </div>
 
-      {/* Admin Section */}
-      {data?.type === "admin" && (
-        <div className="py-3 border-b border-sidebar-border">
-          <div className="mb-6 ">
-            <h3 className="text-xs font-semibold uppercase tracking-wider mb-3 px-4 text-muted-foreground">
-              Admin
-            </h3>
-            <ul className="space-y-1">
-              {navItems.map((item) => {
-                const active = pathname === item.href;
-                return (
-                  <li key={item.href}>
-                    <Link
-                      href={item.href}
-                      className={`flex items-center space-x-3 px-4 py-2.5 rounded-xl transition
-                        ${
-                          active
-                            ? "text-sidebar-accent-foreground bg-sidebar-accent"
-                            : "text-sidebar-foreground bg-transparent"
-                        }
-                        `}
-                      onClick={() => {
-                        if (!isOpen) toggleSidebar(); // close on mobile after click
-                      }}
-                    >
-                      <span
-                        className={`text-lg ${
-                          active
-                            ? "text-sidebar-accent-foreground"
-                            : "bg-inherit"
-                        }`}
-                      >
-                        {item.icon}
-                      </span>
-                      <span className="font-medium">{item.name}</span>
-                    </Link>
-                  </li>
-                );
-              })}
-            </ul>
-          </div>
-        </div>
-      )}
-
       {/* Navigation */}
       <nav className="flex-1 px-4 py-3 overflow-y-auto">
         {/* App Section */}
         <div className="w-full border-b border-sidebar-ring ">
-          <h3 className="text-xs font-semibold uppercase tracking-wider mb-3 px-4 text-muted-foreground">
+          <h3 className="text-xs font-semibold uppercase tracking-wider mb-1 px-4 text-muted-foreground">
             App
           </h3>
           <div className="flex justify-start items-center flex-nowrap mb-2">
-            <Plus size={isOpen ? 14 : 18} />
 
             <NewProjectBtn
               userId={data?.id}
               order={order}
-              className=" md:mt-0  font-medium bg-transparent text-secondary border-none shadow-sm 
+              className=" md:mt-0  font-medium w-full  bg-transparent text-secondary border-none shadow-sm 
             hover:brightness-105 transition "
               newClassName="text-red "
               align={isOpen ? "start" : "center"}
               side={isOpen ? "right" : "left"}
-              alignOffset={isOpen ? 120 : 0}
-              sideOffset={isOpen ? -100 : 120}
+              alignOffset={isOpen ? 20 : 0}
+              sideOffset={isOpen ? -100 : 20}
             />
           </div>
         </div>
@@ -203,7 +149,7 @@ function UserSidebar({
 }
 
 // ========================
-// Hamburger Toggle Button (للموبايل فقط)
+// Hamburger Toggle Button 
 // ========================
 function HamburgerToggle({
   onClick,
@@ -230,9 +176,6 @@ function HamburgerToggle({
   );
 }
 
-// ========================
-// Layout الرئيسي
-// ========================
 export default function DashboardLayout({
   user,
 }: {
@@ -246,7 +189,7 @@ export default function DashboardLayout({
   };
 
   return (
-    <div className="min-h-screen  relative ">
+    <div className="h-full max-h-full overflow-hidden  relative ">
       {/* Sidebar */}
       <UserSidebar
         user={user}
