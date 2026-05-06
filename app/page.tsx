@@ -1,7 +1,7 @@
 import Link from "next/link";
 export default function Home() {
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col min-h-screen h-full overflow-auto">
       {/* Hero Section */}
       <section className="flex flex-col items-center justify-center py-20 px-4 text-center bg-linear-to-b from-background to-muted/20">
         <h1 className="text-5xl md:text-6xl font-bold mb-6 bg-linear-to-r from-primary to-accent bg-clip-text text-transparent animate-in fade-in slide-in-from-bottom-4 duration-1000">

@@ -11,8 +11,13 @@ import { useDispatchHook } from "@/hooks/useSelector";
 import { createProject } from "@/lib/actions/projects";
 import { cn } from "@/lib/utils";
 import { userProjects } from "@/store/reducers/project";
+import { Plus } from "lucide-react";
 
-type ProjectType = "todo" | "project_tracker" | "meeting_notes" | "task_tracker";
+type ProjectType =
+  | "todo"
+  | "project_tracker"
+  | "meeting_notes"
+  | "task_tracker";
 
 const projectTypes: { type: ProjectType; label: string; shortcut: string }[] = [
   { type: "todo", label: "Todo", shortcut: "⌘T" },
@@ -52,7 +57,10 @@ const NewProjectBtn = ({
   return (
     <Menubar className={className}>
       <MenubarMenu>
-        <MenubarTrigger className="">New project</MenubarTrigger>
+        <MenubarTrigger className="w-full text-center">
+          <Plus size={15} className="mx-1"/>
+          New project
+        </MenubarTrigger>
         <MenubarContent
           side={side}
           align={align}
@@ -60,7 +68,7 @@ const NewProjectBtn = ({
           alignOffset={alignOffset}
           className={cn(
             "border border-border w-56 md:w-72 mt-2 *:cursor-pointer",
-            newClassName
+            newClassName,
           )}
         >
           {projectTypes.map((item, index) => (

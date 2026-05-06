@@ -7,7 +7,6 @@ type User = {
   username: string;
   email: string;
   role: string;
-  isActive: boolean;
 } | null;
 
 export default function Sidebar({ user }: { user?: User }) {
@@ -19,7 +18,7 @@ export default function Sidebar({ user }: { user?: User }) {
   ];
 
   const appItems = [
-    { name: "Add Task", href: "/add-task", icon: "➕" },
+    { name: "Tasks mangement", href: "#", icon: "➕" },
     { name: "My Notes", href: "/notes", icon: "📝" },
   ];
 

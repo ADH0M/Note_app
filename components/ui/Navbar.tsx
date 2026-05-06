@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ChangeEvent, useEffect, useRef, useState } from "react";
 import UserModal, { IControler } from "./UserModal";
-import { useDispatchHook, useSelectorHook } from "@/hooks/useSelector";
+import { useDispatchHook } from "@/hooks/useSelector";
 import { fetchUser } from "@/store/reducers/auth";
 
 const links = [
@@ -18,7 +18,6 @@ type User = {
   username: string | undefined;
   email: string | undefined;
   role: string | undefined;
-  isActive: boolean | undefined;
 } | null;
 
 export default function Navbar({ user }: { user?: User }) {
@@ -35,6 +34,8 @@ export default function Navbar({ user }: { user?: User }) {
     setTheme(e.target.value);
   };
 
+  const userRole = ["admin", "customer"];
+
   const dispatch = useDispatchHook();
   useEffect(() => {
     if (user?.email && user.id) {
@@ -46,55 +47,8 @@ export default function Navbar({ user }: { user?: User }) {
     <nav className="sticky top-0 left-0 z-50 bg-sidebar border-b border-sidebar backdrop-blur-sm shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16 items-center">
-          {/* Logo */}
-          <div className="shrink-0">
-            <Link
-              href="/"
-              className="text-xl font-bold text-gray-800 dark:text-white"
-            >
-              YourLogo
-            </Link>
-          </div>
-
           {/* Desktop Menu */}
-          <div className="hidden md:flex items-center space-x-6">
-            {links.map((link) => {
-              return (
-                <Link
-                  key={link.id}
-                  href={link.path}
-                  className={`font-normal text-sm ${
-                    pathname === link.path ? "border border-primary  " : ""
-                  } rounded-md px-2 p-1 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground`}
-                >
-                  {link.title}
-                </Link>
-              );
-            })}
-
-            {user?.role === "admin" && (
-              <Link
-                href="/admin"
-                className={`font-normal text-sm ${
-                  pathname === "/admin" ? "border border-primary  " : ""
-                } rounded-md px-2 p-1 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground`}
-              >
-                Dashboard
-              </Link>
-            )}
-
-            {/* Dark Mode Toggle */}
-            <select
-              name="select-item"
-              id="mean-select"
-              onChange={handleChange}
-              value={theme}
-              className="bg-transparent border border-border rounded-md text-sm p-1"
-            >
-              <option value="dark">dark</option>
-              <option value="light">light</option>
-            </select>
-
+          <div className="hidden md:flex items-center justify-center space-x-6">
             {!user ? (
               <>
                 <Link
@@ -121,6 +75,53 @@ export default function Navbar({ user }: { user?: User }) {
                   {user.username?.charAt(0).toUpperCase()}
                 </span>
               </UserModal>
+            )}
+
+            {links.map((link) => {
+              return (
+                <Link
+                  key={link.id}
+                  href={link.path}
+                  className={`font-normal text-sm ${
+                    pathname === link.path ? "border border-primary  " : ""
+                  } rounded-md px-2 p-1 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground`}
+                >
+                  {link.title}
+                </Link>
+              );
+            })}
+
+            {user?.role === "admin" && (
+              <Link
+                href="/admin"
+                className={`font-normal text-sm ${
+                  pathname === "/admin" ? "border border-primary  " : ""
+                } rounded-md px-2 p-1 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground`}
+              >
+                Dashboard
+              </Link>
+            )}
+
+            {userRole.includes(user?.role || "") && (
+              <Link
+                href="/projects"
+                className={`font-normal text-sm ${
+                  pathname === "/projects" ? "border border-primary  " : ""
+                } rounded-md px-2 p-1 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground`}
+              >
+                Projects
+              </Link>
+            )}
+
+            {userRole.includes(user?.role || "") && (
+              <Link
+                href="/user-dashboard"
+                className={`font-normal text-sm ${
+                  pathname === "/user-dashboard" ? "border border-primary  " : ""
+                } rounded-md px-2 p-1 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground`}
+              >
+                User Dashboard
+              </Link>
             )}
           </div>
 
@@ -163,6 +164,32 @@ export default function Navbar({ user }: { user?: User }) {
                 </svg>
               )}
             </button>
+          </div>
+
+          {/* Logo */}
+          <div className="shrink-0 flex gap-2">
+            <Link
+              href="/"
+              className="text-xl font-bold text-gray-800 dark:text-white"
+            >
+              ogo
+            </Link>
+
+            {/* Dark Mode Toggle */}
+            <select
+              name="select-item"
+              id="mean-select"
+              onChange={handleChange}
+              value={theme}
+              className=" border border-border rounded-md text-sm p-1"
+            >
+              <option value="dark" className="text-primary">
+                dark
+              </option>
+              <option value="light" className="text-primary">
+                light
+              </option>
+            </select>
           </div>
         </div>
       </div>

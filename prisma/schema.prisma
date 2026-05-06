@@ -159,3 +159,11 @@ model PasswordReset {
   
   @@index([userId])
 }
+
+model Session {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @db.ObjectId
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+}

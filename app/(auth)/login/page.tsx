@@ -1,7 +1,8 @@
 "use client";
 import { loginUpAction } from "@/lib/actions/auth-action";
 import Link from "next/link";
-import { useActionState } from "react";
+import { useActionState, useEffect } from "react";
+import { toast } from "sonner";
 
 const initialState: {
   message: string;
@@ -20,6 +21,12 @@ export default function Signup() {
     loginUpAction,
     initialState
   );
+
+  useEffect(() => {
+    if (state.errors?.general) {
+      toast.error(state.errors.general);
+    }
+  }, [state.errors?.general]);
 
   return (
     <div className="w-full flex flex-col items-center justify-center max-h-screen gap-10 p-4    ">

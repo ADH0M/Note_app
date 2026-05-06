@@ -1,6 +1,5 @@
 import { getProject } from "@/lib/actions/projects";
 import { getOrCreateDefaultColumns } from "@/lib/actions/projects";
-import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/actions/session";
 
@@ -16,7 +15,7 @@ export default async function ProjectPage({
     redirect("/login");
   }
   
-  const userId = session.userId;
+  const userId = session.id;
   
   if (!id) {
     redirect("/projects");

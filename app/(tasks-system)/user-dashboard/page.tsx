@@ -1,4 +1,4 @@
-import { cookies } from "next/headers";
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/actions/session";
 import { getDashboardStats, getRecentProjects } from "@/lib/actions/stats";
@@ -10,7 +10,7 @@ export default async function UserDashboardPage() {
     redirect("/login");
   }
   
-  const userId = session.userId;
+  const userId = session.id;
   const stats = await getDashboardStats(userId);
   const recentProjects = await getRecentProjects(userId, 4);
 
@@ -21,15 +21,15 @@ export default async function UserDashboardPage() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <div className="p-6 bg-card rounded-lg border border-border">
           <p className="text-sm text-muted-foreground">Total Projects</p>
-          <p className="text-3xl font-bold">{stats.totalProjects}</p>
+          <p className="text-3xl font-bold">{stats.projects}</p>
         </div>
         <div className="p-6 bg-card rounded-lg border border-border">
           <p className="text-sm text-muted-foreground">Tasks</p>
-          <p className="text-3xl font-bold">{stats.totalTasks}</p>
+          <p className="text-3xl font-bold">{stats.tasks}</p>
         </div>
         <div className="p-6 bg-card rounded-lg border border-border">
           <p className="text-sm text-muted-foreground">Meeting Notes</p>
-          <p className="text-3xl font-bold">{stats.totalNotes}</p>
+          <p className="text-3xl font-bold">{stats.notes}</p>
         </div>
       </div>
 
