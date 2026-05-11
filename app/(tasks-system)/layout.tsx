@@ -27,7 +27,7 @@ const layout = async ({ children }: { children: React.ReactNode }) => {
           <UserSidebar user={user} />
         </aside>
 
-        <section className="flex-1 overflow-y-auto min-h-screen z-40">
+        <section className="flex-1 min-h-full h-full z-40">
           {children}
         </section>
       </main>

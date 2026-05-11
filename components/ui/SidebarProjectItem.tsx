@@ -160,7 +160,7 @@ export function SidebarProjectsSection({
 
   const handleDragEnd = async (e: DragEvent<HTMLDivElement>) => {
     setDarg(false);
-    const id = e.dataTransfer.getData("project-id");
+    const id = e.dataTransfer.getData("project-id");    
     const indecators = getIndecators("user-projects");
     const element = getNerastIndicator(indecators, e);
     const index = element.dataset.before;
