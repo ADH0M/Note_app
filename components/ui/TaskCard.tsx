@@ -1,8 +1,8 @@
 'use client';
-import { useSortable } from "@dnd-kit/sortable";
-import { CSS } from "@dnd-kit/utilities";
+
 import { Prisma } from "@/generated/prisma";
 import { deleteTask } from "@/lib/actions/notes-action";
+import { useSortable } from "@dnd-kit/react/sortable";
 
 type Task = Prisma.TaskGetPayload<object>;
 
@@ -12,41 +12,32 @@ interface TaskCardProps {
 
 const TaskCard = ({ task }: TaskCardProps) => {
   const {
-    setNodeRef,
-    attributes,
-    listeners,
-    transform,
-    transition,
-    isDragging,
+    ref
   } = useSortable({
     id: task.id,
     data: {
       type: "Task",
       task,
     },
+    index:task.id
   });
 
-  const style = {
-    transition,
-    transform: CSS.Transform.toString(transform),
-  };
 
-  if (isDragging) {
-    return (
-      <div
-        ref={setNodeRef}
-        style={style}
-        className="bg-background p-3 rounded-lg border border-primary/50 shadow-md opacity-30 h-[60px]"
-      />
-    );
-  }
+
+  // if (isDragging) {
+  //   return (
+  //     <div
+  //       ref={setNodeRef}
+  //       style={style}
+  //       className="bg-background p-3 rounded-lg border border-primary/50 shadow-md opacity-30 h-[60px]"
+  //     />
+  //   );
+  // }
 
   return (
     <div
-      ref={setNodeRef}
-      style={style}
-      {...attributes}
-      {...listeners}
+      ref={ref}
+
       className="bg-background p-3 rounded-lg border border-border shadow-sm hover:shadow-md transition-shadow group cursor-grab touch-none"
     >
       <div className="flex justify-between items-start gap-2">

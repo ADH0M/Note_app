@@ -5,13 +5,17 @@ import { Provider } from "react-redux";
 import { useState } from "react";
 import projectReducer from "./reducers/project";
 import openSearchSlice from "./reducers/searchSlice";
+import { todoApi } from "./reduxApi/todo";
 
 const store = configureStore({
   reducer: {
     authReducer,
     projectReducer,
-    openSearchSlice
+    openSearchSlice,
+    [todoApi.reducerPath]: todoApi.reducer,
   },
+  middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware().concat(todoApi.middleware),
 });
 
 const StoreProvider = ({ children }: { children: React.ReactNode }) => {

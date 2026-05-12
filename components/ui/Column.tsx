@@ -2,10 +2,10 @@
 import { Prisma } from '@/generated/prisma'
 import { deleteColumn } from '@/lib/actions/notes-action'
 import Tasks from './Tasks'
-import { useDroppable } from '@dnd-kit/core';
+import { useDroppable } from '@dnd-kit/react';
 
 const Column = ({column}: {column: Prisma.ColumnGetPayload<{ include: { tasks: true } }>}) => {
-    const { setNodeRef } = useDroppable({
+    const { ref } = useDroppable({
         id: column.id,
         data: {
             type: "Column",
@@ -15,7 +15,7 @@ const Column = ({column}: {column: Prisma.ColumnGetPayload<{ include: { tasks: t
 
     return (
     <div 
-        ref={setNodeRef}
+        ref={ref}
         className="min-w-[300px] w-[300px] bg-card rounded-xl shadow-sm border border-border flex flex-col max-h-full">
      <div 
         className="p-4 border-b border-border flex justify-between items-center bg-muted/30">
