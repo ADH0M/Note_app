@@ -8,9 +8,10 @@ import { toggleOpen } from "@/store/reducers/searchSlice";
 
 interface ExportImportButtonsProps {
   projectId: string;
+  userId:string;
 }
 
-export function ExportImportButtons({ projectId }: ExportImportButtonsProps) {
+export function ExportImportButtons({ projectId ,userId}: ExportImportButtonsProps) {
   const [loading, setLoading] = useState(false);
   const [importing, setImporting] = useState(false);
 
@@ -20,7 +21,7 @@ export function ExportImportButtons({ projectId }: ExportImportButtonsProps) {
       const res = await fetch("/api/export", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ type, projectId, format: "csv" }),
+        body: JSON.stringify({ type, projectId, format: "csv",userId }),
       });
 
       if (!res.ok) throw new Error("Export failed");
@@ -58,7 +59,7 @@ export function ExportImportButtons({ projectId }: ExportImportButtonsProps) {
         formData.append("file", file);
         formData.append("type", type);
         formData.append("projectId", projectId);
-
+        formData.append('userId',userId);
         const res = await fetch("/api/import", {
           method: "POST",
           body: formData,
@@ -80,7 +81,7 @@ export function ExportImportButtons({ projectId }: ExportImportButtonsProps) {
   const dispatch = useDispatchHook();
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center gap-2   ">
       <div
         className="relative group mx-2 hover:bg-primary px-2 py-1 rounded-md"
         onClick={() => {
@@ -97,12 +98,15 @@ export function ExportImportButtons({ projectId }: ExportImportButtonsProps) {
         <button
           onClick={() => handleExport("tasks")}
           disabled={loading}
-          className="flex items-center gap-2 px-3 py-1.5 text-sm bg-muted hover:bg-muted/80 rounded-lg transition-colors disabled:opacity-50"
+          className="flex items-center gap-2 px-3 py-1.5 text-sm bg-muted hover:bg-muted/80 
+          rounded-lg transition-colors disabled:opacity-50"
         >
           <Download className="w-4 h-4" />
           Export
         </button>
-        <div className="absolute top-full left-0 mt-1 py-1 bg-popover border border-border rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-10 min-w-[140px]">
+        <div className="absolute top-full right-0 mt-1 py-1 bg-popover border border-border
+         rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible 
+         transition-all z-10 min-w-[140px]">
           <button
             onClick={() => handleExport("tasks")}
             className="w-full px-3 py-2 text-left text-sm hover:bg-muted rounded-t-lg"
@@ -136,7 +140,8 @@ export function ExportImportButtons({ projectId }: ExportImportButtonsProps) {
           <Upload className="w-4 h-4" />
           Import
         </button>
-        <div className="absolute top-full left-0 mt-1 py-1 bg-popover border border-border rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-10 min-w-[140px]">
+        <div className="absolute top-full right-0 mt-1 py-1 bg-popover border border-border rounded-lg shadow-lg opacity-0 invisible
+         group-hover:opacity-100 group-hover:visible transition-all z-10 min-w-[140px]">
           <button
             onClick={() => handleImport("tasks")}
             className="w-full px-3 py-2 text-left text-sm hover:bg-muted rounded-t-lg"
