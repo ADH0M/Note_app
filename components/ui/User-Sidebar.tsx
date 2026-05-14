@@ -14,7 +14,7 @@ import {
 } from "react-icons/fi";
 import { userProjects } from "@/store/reducers/project";
 import { useDispatchHook, useSelectorHook } from "@/hooks/useSelector";
-import { Plus, Sidebar } from "lucide-react";
+import { NotebookTabsIcon, Sidebar } from "lucide-react";
 import NewProjectBtn from "../layout/NewProjectBtn";
 import { SidebarProjectsSection } from "./SidebarProjectItem";
 
@@ -39,9 +39,10 @@ function UserSidebar({
   isOpen: boolean;
   toggleSidebar: () => void;
 }) {
-
   const { data } = useSelectorHook((state) => state.authReducer);
   const projects = useSelectorHook((state) => state.projectReducer);
+  const pathname = usePathname();
+
   let order = 1000;
   if (projects.data && projects.data.length) {
     order = Number(projects.data[projects.data?.length - 1].order);
@@ -59,8 +60,8 @@ function UserSidebar({
       className={`fixed max-h-full h-full md:sticky  md:translate-x-0 z-40  flex 
         flex-col bg-sidebar border-r border-sidebar-border text-sidebar-foreground
          transition-transform duration-300 ease-in-out ${
-        isOpen ? "translate-x-0" : "-translate-x-full"
-      } w-64 md:w-64`}
+           isOpen ? "translate-x-0" : "-translate-x-full"
+         } w-64 md:w-64`}
     >
       {/* Close Button for Mobile */}
       <div className="md:hidden p-4 flex justify-end">
@@ -107,8 +108,7 @@ function UserSidebar({
           <h3 className="text-xs font-semibold uppercase tracking-wider mb-1 px-4 text-muted-foreground">
             App
           </h3>
-          <div className="flex justify-start items-center flex-nowrap mb-2">
-
+          <div className="flex justify-start flex-col  flex-nowrap mb-2">
             <NewProjectBtn
               userId={data?.id}
               order={order}
@@ -120,6 +120,30 @@ function UserSidebar({
               alignOffset={isOpen ? 20 : 0}
               sideOffset={isOpen ? -100 : 20}
             />
+
+            <Link
+              href="/user-notes"
+              className={`flex group gap-2 hover:bg-accent 
+                items-center  mx-2 px-2 rounded-md py-1 ${pathname === "/user-notes" ? "text-primary" : "text-card-foreground"}`}
+            >
+              <NotebookTabsIcon
+                size={14}
+                className="group-hover:text-primary"
+              />
+              Notes
+            </Link>
+
+            <Link
+              href="/user-dashboard"
+              className={`flex group gap-2 hover:bg-accent 
+                items-center  mx-2 px-2 rounded-md py-1 ${pathname === "/user-dashboard" ? "text-primary" : "text-card-foreground"}`}
+            >
+              <NotebookTabsIcon
+                size={14}
+                className="group-hover:text-primary"
+              />
+              Dashboard
+            </Link>
           </div>
         </div>
         {/* user projects */}
@@ -149,7 +173,7 @@ function UserSidebar({
 }
 
 // ========================
-// Hamburger Toggle Button 
+// Hamburger Toggle Button
 // ========================
 function HamburgerToggle({
   onClick,

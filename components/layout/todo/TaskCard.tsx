@@ -10,6 +10,9 @@ import {
   CheckCircle,
   Circle,
   Clock,
+  ArrowBigDownDash,
+  AlignEndHorizontal,
+  ArrowBigUpDash,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
@@ -18,15 +21,15 @@ import {
   useDeleteTaskMutation,
   useUpdateTaskMutation,
 } from "@/store/reduxApi/todo";
-import { Button } from "@/components/ui/button";
 import { useSortable } from "@dnd-kit/react/sortable";
+import { ReusableDropdownMenu } from "@/components/ui/ReusableDropMenu";
 
 interface TaskCardProps {
   task: Task;
-  index:number;
+  index: number;
 }
 
-const TaskCard: React.FC<TaskCardProps> = ({ task ,index }) => {
+const TaskCard: React.FC<TaskCardProps> = ({ task, index }) => {
   const [updateTask] = useUpdateTaskMutation();
   const [deleteTask] = useDeleteTaskMutation();
   const [isEditing, setIsEditing] = useState(false);
@@ -54,7 +57,37 @@ const TaskCard: React.FC<TaskCardProps> = ({ task ,index }) => {
       setIsEditing(false);
     }
   };
-  const {ref} = useSortable({id:task.id ,index})
+
+  const handleUpdatePriority = (priority: "high" | "low" | "medium") => {
+    if (priority.trim() && priority.trim() != task.priority) {
+      updateTask({ id: task.id, priority });
+      setIsEditing(false);
+    } else {
+      setIsEditing(false);
+    }
+  };
+  const { ref } = useSortable({ id: task.id, index });
+
+  const actions = [
+    {
+      Icon: ArrowBigDownDash,
+      handler: handleUpdatePriority,
+      label: "low",
+      name: "low",
+    },
+    {
+      Icon: AlignEndHorizontal,
+      handler: handleUpdatePriority,
+      label: "medium",
+      name: "Medium",
+    },
+    {
+      Icon: ArrowBigUpDash,
+      handler: handleUpdatePriority,
+      label: "high",
+      name: "High",
+    },
+  ];
   return (
     <div
       className={cn(
@@ -121,8 +154,12 @@ const TaskCard: React.FC<TaskCardProps> = ({ task ,index }) => {
                 priorityColors[task.priority],
               )}
             >
-              <Flag className="w-3 h-3" />
-              <span className="capitalize">{task.priority}</span>
+              <ReusableDropdownMenu
+                title={task.priority}
+                actions={actions}
+                TitleIcon={Flag}
+                className=" border-accent text-muted-foreground "
+              />
             </div>
           </div>
         </div>

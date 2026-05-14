@@ -1,12 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, LayoutGrid, CalendarIcon, Settings, Inbox } from "lucide-react";
+import { Plus, LayoutGrid, Inbox } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   useCreateColumnMutation,
   useGetColumnsQuery,
-  useGetProjectsQuery,
 } from "@/store/reduxApi/todo";
 import TodoColumn from "./Column";
 import { DragDropProvider } from "@dnd-kit/react";
@@ -42,39 +41,8 @@ export default function TodoPage({
 
   return (
     <main className="h-full min-h-screen bg-background">
-      <div className="max-w-7xl mx-auto p-5 sm:p-10">
-        {/* Header */}
-        <header className="mb-8">
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h1 className="text-3xl font-bold bg-linear-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-                Build your page
-              </h1>
-              <p className="text-muted-foreground text-sm mt-1">
-                Organize your tasks, boost productivity
-              </p>
-            </div>
-            <div className="flex gap-2">
-              <Button variant="ghost" size="sm">
-                <CalendarIcon className="w-4 h-4 mr-2" />
-                Calendar
-              </Button>
-              <Button variant="ghost" size="sm">
-                <Settings className="w-4 h-4" />
-              </Button>
-            </div>
-          </div>
-
-          {/* Projects Section */}
-          <div className="mb-6">
-            <div className="flex items-center gap-2 mb-3">
-              <LayoutGrid className="w-4 h-4 text-primary" />
-              <h2 className="text-sm font-semibold text-muted">
-                {projectType || "Board"}
-              </h2>
-            </div>
-          </div>
-        </header>
+      <div className="max-w-7xl mx-auto p-x5 sm:px-10">
+        
 
         {/* Board */}
         {projectId ? (
@@ -111,7 +79,7 @@ export default function TodoPage({
             ) : (
               <div className="flex flex-wrap items-center gap-4 w-full min-w-full h-[600px] pb-4">
                 <DragDropProvider>
-                  {columns?.map((column ,index) => (
+                  {columns?.map((column, index) => (
                     <TodoColumn
                       key={column.id}
                       column={column}

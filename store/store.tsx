@@ -6,6 +6,7 @@ import { useState } from "react";
 import projectReducer from "./reducers/project";
 import openSearchSlice from "./reducers/searchSlice";
 import { todoApi } from "./reduxApi/todo";
+import { notesApi } from "./reduxApi/notes.api";
 
 const store = configureStore({
   reducer: {
@@ -13,9 +14,11 @@ const store = configureStore({
     projectReducer,
     openSearchSlice,
     [todoApi.reducerPath]: todoApi.reducer,
+    [notesApi.reducerPath]: notesApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware().concat(todoApi.middleware),
+    getDefaultMiddleware().concat(todoApi.middleware , notesApi.middleware),
+
 });
 
 const StoreProvider = ({ children }: { children: React.ReactNode }) => {
