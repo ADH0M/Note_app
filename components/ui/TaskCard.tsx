@@ -19,7 +19,7 @@ const TaskCard = ({ task }: TaskCardProps) => {
       type: "Task",
       task,
     },
-    index:task.id
+    index:task.order
   });
 
 

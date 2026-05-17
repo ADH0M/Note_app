@@ -1,29 +1,21 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
+
 import {
-  FiPlus,
   FiFolder,
-  FiList,
   FiFileText,
-  FiEdit2,
-  FiTrash2,
   FiSearch,
-  FiMoreVertical,
   FiClock,
   FiCheckSquare,
 } from "react-icons/fi";
 import { deleteProjet, getProjects } from "@/lib/actions/projects";
 import NewProjectBtn from "@/components/layout/NewProjectBtn";
 import { useDispatchHook, useSelectorHook } from "@/hooks/useSelector";
-import { CardActions } from "@/components/ui/action";
 import { toast } from "sonner";
 import OnDelete from "@/components/layout/modal/onDelete";
 import OnEdit from "@/components/layout/modal/onEdit";
 import ProjectList from "@/components/layout/project/ProjectList";
-import { router } from "next/client";
 import { userProjects } from "@/store/reducers/project";
 
 type ProjectType =
@@ -78,7 +70,7 @@ export default function ProjectsPage() {
 
   const { data } = useSelectorHook((state) => state.authReducer);
   const userId = data?.id;
-  const dispatch =useDispatchHook();
+  const dispatch = useDispatchHook();
   const projectStore = useSelectorHook((state) => state.projectReducer);
   let order = 1000;
   if (projectStore.data && projectStore.data.length) {
@@ -113,7 +105,6 @@ export default function ProjectsPage() {
       setDeleteConfirm(null);
       toast.success("Project deleted successfully");
       dispatch(userProjects(userId));
-
     } catch (error) {
       console.error("Failed to delete project:", error);
       toast.error("Failed to delete project");
@@ -214,7 +205,7 @@ export default function ProjectsPage() {
         editingId={editingId}
         setEditTitle={setEditTitle}
         setEditingId={setEditingId}
-        userId ={userId}
+        userId={userId}
       />
       {/* Delete Confirmation */}
       <OnDelete

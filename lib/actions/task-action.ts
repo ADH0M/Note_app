@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use server";
 import prisma from "@/lib/db/db-connection";
 import { revalidatePath } from "next/cache";
@@ -12,7 +13,7 @@ export async function createTask(
 ) {
   const session = await getSession();
   if (!session) throw new Error("Unauthorized");
-  const userId = session.userId;
+  const userId = session.id;
   
   if (!userId || !title || !projectId) {
     throw new Error("Missing required fields");
@@ -51,7 +52,7 @@ export async function updateTask(
 ) {
   const session = await getSession();
   if (!session) throw new Error("Unauthorized");
-  const userId = session.userId;
+  const userId = session.id;
   
   if (!userId || !taskId) {
     throw new Error("Missing required fields");
@@ -83,7 +84,7 @@ export async function updateTask(
 export async function deleteTaskAction(taskId: string) {
   const session = await getSession();
   if (!session) throw new Error("Unauthorized");
-  const userId = session.userId;
+  const userId = session.id;
   
   if (!userId || !taskId) {
     throw new Error("Missing required fields");
@@ -106,7 +107,7 @@ export async function deleteTaskAction(taskId: string) {
 export async function updateTaskTime(taskId: string, timeSpent: number) {
   const session = await getSession();
   if (!session) throw new Error("Unauthorized");
-  const userId = session.userId;
+  const userId = session.id;
   
   if (!userId || !taskId) {
     throw new Error("Missing required fields");

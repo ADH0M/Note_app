@@ -6,19 +6,19 @@ import { revalidatePath } from "next/cache";
 import { getSession } from "./session";
 
 export async function createColumn(order: number, formData: FormData) {
-  const title = formData.get("title") as string ;
+  const title = formData.get("title") as string;
+  const projectId = formData.get("projectId") as string;
   const session = await getSession();
-  const userId = session?.userId;
+  const userId = session?.id;
 
-  if (!userId || !title) return;
+  if (!userId || !title || !projectId) return;
 
   try {
     await prisma.column.create({
       data: {
         title,
-        id: userId,
-        order: 0,
-
+        order,
+        projectId
       },
     });
     revalidatePath("/notes");
@@ -45,7 +45,7 @@ export async function createTask(
   const title = formData.get("title") as string;
   const columnId = formData.get("columnId") as string;
   const session = await getSession();
-  const userId = session?.userId;
+  const userId = session?.id;
 
   if (!userId || !title || !columnId) return;
 
@@ -107,16 +107,18 @@ export async function updateTaskPosition(
   }
 }
 
-export type ColumnActionType = Prisma.ColumnGetPayload<{include:{tasks:true}}>
+export type ColumnActionType = Prisma.ColumnGetPayload<{
+  include: { tasks: true };
+}>;
 export async function getColumnsAction(userId: string) {
   try {
-    const columns = await prisma.column.findMany({
+    const columns = (await prisma.column.findMany({
       where: { id: userId },
       include: {
         tasks: true,
       },
       orderBy: { order: "asc" },
-    }) as ColumnActionType[]
+    })) as ColumnActionType[];
     return columns;
   } catch (error) {
     console.error("Failed to get columns:", error);
@@ -132,11 +134,11 @@ export async function createNote(
     meetingDate?: string;
     attendees?: string[];
     tags?: string[];
-  }
+  },
 ) {
   const session = await getSession();
-  const userId = session?.userId;
-  
+  const userId = session?.id;
+
   if (!userId || !projectId || !data.title || !data.content) {
     throw new Error("Missing required fields");
   }
@@ -178,11 +180,11 @@ export async function updateNote(
     meetingDate?: string;
     attendees?: string[];
     tags?: string[];
-  }
+  },
 ) {
   const session = await getSession();
-  const userId = session?.userId;
-  
+  const userId = session?.id;
+
   if (!userId || !noteId) {
     throw new Error("Missing required fields");
   }
@@ -193,12 +195,16 @@ export async function updateNote(
       data: {
         ...(data.title && { title: data.title }),
         ...(data.content && { content: data.content }),
-        ...(data.meetingDate !== undefined && { meetingDate: data.meetingDate ? new Date(data.meetingDate) : null }),
+        ...(data.meetingDate !== undefined && {
+          meetingDate: data.meetingDate ? new Date(data.meetingDate) : null,
+        }),
         ...(data.attendees && { attendees: data.attendees }),
         ...(data.tags && { tags: data.tags }),
       },
     });
-    revalidatePath(`/projects/${(await prisma.note.findUnique({ where: { id: noteId } }))?.projectId}`);
+    revalidatePath(
+      `/projects/${(await prisma.note.findUnique({ where: { id: noteId } }))?.projectId}`,
+    );
   } catch (error) {
     console.error("Failed to update note:", error);
     throw error;
@@ -207,8 +213,8 @@ export async function updateNote(
 
 export async function deleteNote(noteId: string) {
   const session = await getSession();
-  const userId = session?.userId;
-  
+  const userId = session?.id;
+
   if (!userId || !noteId) {
     throw new Error("Missing required fields");
   }

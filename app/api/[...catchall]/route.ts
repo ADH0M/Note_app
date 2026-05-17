@@ -1,57 +1,67 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(
-  request: NextRequest,
-  { params }: { params: { catchall: string[] } }
+  _request: NextRequest,
+  {
+    params,
+  }: {
+    params: Promise<{ catchall: string[] }>;
+  },
 ) {
+  const { catchall } = await params;
   return NextResponse.json(
-    { 
-      error: 'API endpoint not found',
-      path: `/${params.catchall.join('/')}`,
-      message: 'The requested API endpoint does not exist'
+    {
+      error: "API endpoint not found",
+      path: `/${catchall.join("/")}`,
+      message: "The requested API endpoint does not exist",
     },
-    { status: 404 }
+    { status: 404 },
   );
 }
 
 export async function POST(
-  request: NextRequest,
-  { params }: { params: { catchall: string[] } }
+  _request: NextRequest,
+  { params }: { params: Promise<{ catchall: string[] }> },
 ) {
+  const { catchall } = await params;
   return NextResponse.json(
-    { 
-      error: 'API endpoint not found',
-      path: `/${params.catchall.join('/')}`,
-      message: 'The requested API endpoint does not exist'
+    {
+      error: "API endpoint not found",
+      path: `/${catchall.join("/")}`,
+      message: "The requested API endpoint does not exist",
     },
-    { status: 404 }
+    { status: 404 },
   );
 }
 
 export async function PUT(
-  request: NextRequest,
-  { params }: { params: { catchall: string[] } }
+  _request: NextRequest,
+  { params }: { params: Promise<{ catchall: string[] }> },
 ) {
+  const { catchall } = await params;
+
   return NextResponse.json(
-    { 
-      error: 'API endpoint not found',
-      path: `/${params.catchall.join('/')}`,
-      message: 'The requested API endpoint does not exist'
+    {
+      error: "API endpoint not found",
+      path: `/${catchall.join("/")}`,
+      message: "The requested API endpoint does not exist",
     },
-    { status: 404 }
+    { status: 404 },
   );
 }
 
 export async function DELETE(
-  request: NextRequest,
-  { params }: { params: { catchall: string[] } }
+  _request: NextRequest,
+  { params }: { params: Promise<{ catchall: string[] }> },
 ) {
+  const { catchall } = await params;
+
   return NextResponse.json(
-    { 
-      error: 'API endpoint not found',
-      path: `/${params.catchall.join('/')}`,
-      message: 'The requested API endpoint does not exist'
+    {
+      error: "API endpoint not found",
+      path: `/${catchall.join("/")}`,
+      message: "The requested API endpoint does not exist",
     },
-    { status: 404 }
+    { status: 404 },
   );
 }

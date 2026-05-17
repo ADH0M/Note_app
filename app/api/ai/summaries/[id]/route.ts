@@ -3,17 +3,21 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
+    const { id } = await params;
     const { searchParams } = new URL(request.url);
     const userId = searchParams.get("userId");
 
     if (!userId) {
       return NextResponse.json({ error: "User ID required" }, { status: 400 });
     }
+    if (!id) {
+      return NextResponse.json({ error: "ID required" }, { status: 400 });
+    }
 
-    const summary = await AIService.getSummaryById(userId, params.id);
+    const summary = await AIService.getSummaryById(userId, id);
 
     if (!summary) {
       return NextResponse.json({ error: "Summary not found" }, { status: 404 });
@@ -31,21 +35,25 @@ export async function GET(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
+    const { id } = await params;
     const { searchParams } = new URL(request.url);
     const userId = searchParams.get("userId");
 
     if (!userId) {
       return NextResponse.json({ error: "User ID required" }, { status: 400 });
     }
+    if (!id) {
+      return NextResponse.json({ error: "id required" }, { status: 400 });
+    }
 
-    const deleted = await AIService.deleteSummary(userId, params.id);
+    const deleted = await AIService.deleteSummary(userId, id);
 
     return NextResponse.json({
       success: true,
-      deleted: deleted.count > 0
+      deleted: deleted.count > 0,
     });
   } catch (error) {
     console.error("Error deleting summary:", error);
