@@ -1,13 +1,12 @@
 "use client";
 
-import { useTheme } from "next-themes";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ChangeEvent, useEffect, useRef, useState } from "react";
+import {  useEffect, useRef, useState } from "react";
 import UserModal, { IControler } from "./UserModal";
 import { useDispatchHook } from "@/hooks/useSelector";
 import { fetchUser } from "@/store/reducers/auth";
-import { ThemeComponent } from "./theme";
+import  {ThemeComponent}  from "./theme";
 
 const links = [
   { path: "/", title: "Home", id: "8home8ii" },

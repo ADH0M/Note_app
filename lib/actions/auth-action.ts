@@ -35,7 +35,6 @@ export async function registerAction(
   } = {};
 
   let hasErrors = false;
-
   if (!username || username.length < 2) {
     errors.username = ["Username must be at least 2 characters long."];
     hasErrors = true;
