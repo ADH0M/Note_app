@@ -7,10 +7,11 @@ import { ChangeEvent, useEffect, useRef, useState } from "react";
 import UserModal, { IControler } from "./UserModal";
 import { useDispatchHook } from "@/hooks/useSelector";
 import { fetchUser } from "@/store/reducers/auth";
+import { ThemeComponent } from "./theme";
 
 const links = [
   { path: "/", title: "Home", id: "8home8ii" },
-  { path: "/notes", title: "Notes", id: "notes08ii" },
+  { path: "/ai-hub", title: "Ai hub", id: "notes08ii" },
 ];
 
 type User = {
@@ -21,7 +22,6 @@ type User = {
 } | null;
 
 export default function Navbar({ user }: { user?: User }) {
-  const { theme, setTheme } = useTheme();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const pathname = usePathname();
   const openModal = useRef<IControler | null>(null);
@@ -30,9 +30,7 @@ export default function Navbar({ user }: { user?: User }) {
     setIsMenuOpen(!isMenuOpen);
   };
 
-  const handleChange = (e: ChangeEvent<HTMLSelectElement>) => {
-    setTheme(e.target.value);
-  };
+
 
   const userRole = ["admin", "customer"];
 
@@ -103,26 +101,27 @@ export default function Navbar({ user }: { user?: User }) {
             )}
 
             {userRole.includes(user?.role || "") && (
-              <Link
-                href="/projects"
-                className={`font-normal text-sm ${
-                  pathname === "/projects" ? "border border-primary  " : ""
-                } rounded-md px-2 p-1 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground`}
-              >
-                Projects
-              </Link>
+              <>
+                <Link
+                  href="/projects"
+                  className={`font-normal text-sm ${
+                    pathname === "/projects" ? "border border-primary  " : ""
+                  } rounded-md px-2 p-1 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground`}
+                >
+                  Projects
+                </Link>
+
+                <Link
+                  href="/user-dashboard"
+                  className={`font-normal text-sm ${
+                    pathname === "/user-dashboard" ? "border border-primary  " : ""
+                  } rounded-md px-2 p-1 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground`}
+                >
+                  User dashboard
+                </Link>
+              </>
             )}
 
-            {userRole.includes(user?.role || "") && (
-              <Link
-                href="/user-dashboard"
-                className={`font-normal text-sm ${
-                  pathname === "/user-dashboard" ? "border border-primary  " : ""
-                } rounded-md px-2 p-1 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground`}
-              >
-                User Dashboard
-              </Link>
-            )}
           </div>
 
           {/* Mobile Menu Button */}
@@ -176,20 +175,7 @@ export default function Navbar({ user }: { user?: User }) {
             </Link>
 
             {/* Dark Mode Toggle */}
-            <select
-              name="select-item"
-              id="mean-select"
-              onChange={handleChange}
-              value={theme}
-              className=" border border-border rounded-md text-sm p-1"
-            >
-              <option value="dark" className="text-primary">
-                dark
-              </option>
-              <option value="light" className="text-primary">
-                light
-              </option>
-            </select>
+            <ThemeComponent/>
           </div>
         </div>
       </div>
@@ -235,16 +221,7 @@ export default function Navbar({ user }: { user?: User }) {
 
             <div className="py-2 border-b border-gray-100 dark:border-gray-800">
               {/* Dark Mode Toggle */}
-              <select
-                name="select-item"
-                id="mean-select"
-                onChange={handleChange}
-                value={theme}
-                className="bg-transparent border border-border rounded-md text-sm p-1 w-full"
-              >
-                <option value="dark">dark</option>
-                <option value="light">light</option>
-              </select>
+              <ThemeComponent/>
             </div>
 
             <div className="pt-2 flex flex-col space-y-3">
@@ -278,3 +255,4 @@ export default function Navbar({ user }: { user?: User }) {
     </nav>
   );
 }
+

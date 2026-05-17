@@ -194,3 +194,12 @@ body {
     @apply block h-5  text-destructive text-xs text-center w-full ;
   }
 }
+/* Optional: Add this for 404 page animations */
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+
+.not-found-float {
+  animation: float 3s ease-in-out infinite;
+}

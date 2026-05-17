@@ -5,7 +5,6 @@ generator client {
 
 datasource db {
   provider = "mongodb"
-  url = env("DATABASE_URL")
 }
 
 model User {
@@ -25,6 +24,13 @@ model User {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  // ai relations
+  aiTaskSuggestions AITaskSuggestion[]
+  aiSummaries       AISummary[]
+  aiDailyPlans      AIDailyPlan[]
+  aiConversations   AIConversation[]
+  aiAnalytics       AIAnalytics[]
 }
 
 model Project {
@@ -64,16 +70,16 @@ model Column {
 }
 
 model Task {
-  id       String  @id @default(auto()) @map("_id") @db.ObjectId
-  title    String
-  content  String?
-  favorite Boolean @default(false)
-  state    Boolean @default(false)
-  order    Float   @default(0)
-  priority Priority @default(medium)
-  dueDate  DateTime?
-  startDate DateTime?
-  timeSpent Int @default(0)
+  id         String    @id @default(auto()) @map("_id") @db.ObjectId
+  title      String
+  content    String?
+  favorite   Boolean   @default(false)
+  state      Boolean   @default(false)
+  order      Float     @default(0)
+  priority   Priority  @default(medium)
+  dueDate    DateTime?
+  startDate  DateTime?
+  timeSpent  Int       @default(0)
   hourlyRate Float?
 
   projectId String  @db.ObjectId
@@ -85,8 +91,9 @@ model Task {
   userId String @db.ObjectId
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  aitaskSuggestions AITaskSuggestion[]
 
   @@index([projectId])
   @@index([columnId])
@@ -111,8 +118,8 @@ model Note {
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   meetingDate DateTime?
-  attendees  String[]
-  tags       String[]
+  attendees   String[]
+  tags        String[]
   actionItems Json?
 
   createdAt DateTime @default(now())
@@ -154,9 +161,9 @@ model PasswordReset {
   token     String   @unique
   expiresAt DateTime
   used      Boolean  @default(false)
-  
+
   createdAt DateTime @default(now())
-  
+
   @@index([userId])
 }
 
@@ -167,49 +174,50 @@ model Session {
   expiresAt DateTime
   createdAt DateTime @default(now())
 }
+
 // ---------------------------------------------------------------------//
 // Ai schema
 model AITaskSuggestion {
-  id            String   @id @default(auto()) @map("_id") @db.ObjectId
-  taskTitle     String
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  taskTitle       String
   taskDescription String?
-  suggestedTime String
-  tips          String
-  userId        String   @db.ObjectId
-  taskId        String?  @db.ObjectId
-  createdAt     DateTime @default(now())
-  
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  suggestedTime   String
+  tips            String
+  userId          String   @db.ObjectId
+  taskId          String?  @db.ObjectId
+  createdAt       DateTime @default(now())
+
+  user User  @relation(fields: [userId], references: [id], onDelete: Cascade)
   task Task? @relation(fields: [taskId], references: [id])
-  
+
   @@index([userId])
   @@index([taskId])
 }
 
 model AISummary {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  originalText String @db.Text
-  summary   String   @db.Text
-  insights  String[] // Array of insights
-  userId    String   @db.ObjectId
-  createdAt DateTime @default(now())
-  
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  originalText String
+  summary      String
+  insights     String[] // Array of insights
+  userId       String   @db.ObjectId
+  createdAt    DateTime @default(now())
+
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
+
   @@index([userId])
 }
 
 model AIDailyPlan {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  plan      String   @db.Text
-  userMessage String? @db.Text
-  tasks     Json     // Store tasks as JSON
-  userId    String   @db.ObjectId
-  date      DateTime @default(now())
-  executed  Boolean  @default(false)
-  
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  plan        String
+  userMessage String?
+  tasks       Json // Store tasks as JSON
+  userId      String   @db.ObjectId
+  date        DateTime @default(now())
+  executed    Boolean  @default(false)
+
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
+
   @@index([userId])
   @@index([date])
 }
@@ -217,27 +225,34 @@ model AIDailyPlan {
 model AIConversation {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
   userId    String   @db.ObjectId
-  messages  Json     // Store conversation history
+  messages  Json // Store conversation history
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  
+
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
+
   @@index([userId])
 }
 
 model AIAnalytics {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  userId    String   @db.ObjectId
-  feature   String   // 'suggestion', 'summary', 'plan', 'coach'
-  tokensUsed Int     @default(0)
-  responseTime Int   // in milliseconds
-  success   Boolean  @default(true)
-  createdAt DateTime @default(now())
-  
+  id           String    @id @default(auto()) @map("_id") @db.ObjectId
+  userId       String    @db.ObjectId
+  feature      AiFeature @default(suggestion)
+  tokensUsed   Int       @default(0)
+  responseTime Int // in milliseconds
+  success      Boolean   @default(true)
+  createdAt    DateTime  @default(now())
+
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
+
   @@index([userId])
   @@index([feature])
   @@index([createdAt])
+}
+
+enum AiFeature {
+  suggestion
+  summary
+  plan
+  coach
 }
