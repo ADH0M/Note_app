@@ -8,8 +8,7 @@ export async function POST(request: NextRequest) {
     const file = formData.get("file") as File | null;
     const type = formData.get("type") as string | null;
     const userId = formData.get("userId") as string | null;
-    const projectId = formData.get("projectId") as string | null;
-
+    const projectId = formData.get("projectId") as string | null;    
     if (!file || !type || !projectId ||!userId) {
       return NextResponse.json(
         { error: "Missing file, type, or projectId" },
@@ -35,7 +34,8 @@ async function handleCsvImport(
   userId:string,
 ) {
   const lines = csv.split("\n").filter((line) => line.trim());
-
+  console.log(lines);
+  
   if (lines.length < 2) {
     return NextResponse.json(
       { error: "CSV is empty or has no data rows" },
@@ -43,53 +43,53 @@ async function handleCsvImport(
     );
   }
 
-  if (type === "tasks") {
-    const headers = lines[0].split(",").map((h) => h.trim().toLowerCase());
-    const tasks: { title: string; description?: string; priority: Priority; completed?: boolean }[] = [];
+    if (type === "tasks") {
+     const headers = lines[0].split(",").map((h) => h.trim().toLowerCase());
+     const tasks: { title: string; description?: string; priority: Priority; completed?: boolean }[] = [];
 
-    for (let i = 1; i < lines.length; i++) {
-      const values = parseCsvLine(lines[i]);
-      const row: Record<string, string> = {};
-      headers.forEach((header, index) => {
-        row[header] = values[index] || "";
-      });
+     for (let i = 1; i < lines.length; i++) {
+       const values = parseCsvLine(lines[i]);
+       const row: Record<string, string> = {};
+       headers.forEach((header, index) => {
+         row[header] = values[index] || "";
+       });
 
-      tasks.push({
-        title: row.title || "",
-        description: row.description,
-        priority: row.priority as Priority,
-        completed: row.completed?.toLowerCase() === "yes",
-      });
-    }
+       tasks.push({
+         title: row.title || "",
+         description: row.description,
+         priority: row.priority as Priority,
+         completed: row.completed?.toLowerCase() === "yes",
+       });
+     }
 
-    const maxOrder = await prisma.task.findFirst({
-      where: { projectId },
-      orderBy: { order: "desc" },
-    });
+     const maxOrder = await prisma.task.findFirst({
+       where: { projectId },
+       orderBy: { order: "desc" },
+     });
 
-    let order = (maxOrder?.order || 0) + 1;
+     let order = (maxOrder?.order || 0) + 1;
 
-    for (const task of tasks) {
-      if (task.title) {
-        await prisma.task.create({
-          data: {
-            title: task.title,
-            content: task.description,
-            priority: task.priority,
-            state: task.completed,
-            projectId,
-            order: order++,
-            userId
-          },
-        });
-      }
-    }
+     for (const task of tasks) {
+       if (task.title) {
+         await prisma.task.create({
+           data: {
+             title: task.title,
+             content: task.description,
+             priority: task.priority,
+             state: task.completed,
+             projectId,
+             order: order++,
+             userId
+           },
+         });
+       }
+     }
 
-    return NextResponse.json({
-      success: true,
-      message: `Imported ${tasks.length} tasks`,
-    });
-  }
+     return NextResponse.json({
+       success: true,
+       message: `Imported ${tasks.length} tasks`,
+     });
+   }
 
   if (type === "notes") {
     const headers = lines[0].split(",").map((h) => h.trim().toLowerCase());

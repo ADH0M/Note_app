@@ -1,7 +1,6 @@
 "use client";
 import { Prisma } from '@/generated/prisma'
 import { createTask } from '@/lib/actions/notes-action'
-import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import TaskCard from './TaskCard';
 import { useMemo } from 'react';
 
@@ -25,11 +24,11 @@ const Tasks = ({column}: {column: ColumnWithTasks}) => {
   return (
         <>
         <div className="p-4 max-h-fit overflow-y-auto space-y-3 min-h-[100px]" >
-            <SortableContext items={tasksIds} strategy={verticalListSortingStrategy}>
+            <>
               {column.tasks.map((task) => (
                 <TaskCard key={task.id} task={task} />
               ))}
-            </SortableContext>
+            </>
               
               {column.tasks.length === 0 && (
                 <p className="text-center text-xs text-muted-foreground py-4 italic">No tasks yet</p>

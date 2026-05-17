@@ -142,18 +142,21 @@ export async function getProject(userId: string, projectId: string) {
           type: project.type,
           title: true,
           createdAt: true,
-          tasks: project.tasks,
+          notes: project.notes,
           id: project.id,
           image: project.image,
         };
       }
       case "project_tracker": {
+        return project
       }
       case "task_tracker": {
+        return project
       }
       default:
         break;
     }
+
   } catch (err) {
     console.error("Error fetching projects:", err);
     throw new Error("Could not fetch projects");

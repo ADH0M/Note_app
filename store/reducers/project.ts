@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { getProjects } from "@/lib/actions/projects";
+import { ProjectType } from "@/generated/prisma";
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 interface ITask {
@@ -10,18 +10,16 @@ interface ITask {
 }
 
 interface ITaskData {
-  createdAt: any;
-  id?: string;
-  title?: string;
-  state?: boolean;
-  order?: number;
-  userId?: string;
-  projectId?: string;
-  columnId?: string;
-  columns?: [];
-  image?: string | null;
-  task?: [];
-  type?: "todo" | "project_tracker" | "meeting_notes" | "task_tracker";
+  id: string;
+  title: string;
+  type: ProjectType;
+  order: number;
+  userId: string;
+  createdAt: string;
+  _count?: {
+    tasks: number;
+    notes: number;
+  };
 }
 
 export const userProjects = createAsyncThunk(
@@ -29,14 +27,15 @@ export const userProjects = createAsyncThunk(
   async (userId: string, thunkAPI) => {
     try {
       const res = await fetch(`/api/projects?userId=${userId}`, {
-        next: { tags: ["projects"] }, 
+        next: { tags: ["projects"] },
+        
       });
-      const data = await res.json()      
+      const data = await res.json();
       return data.data;
     } catch (error: any) {
       return thunkAPI.rejectWithValue(error.message || "Unknown error");
     }
-  }
+  },
 );
 
 const initialState: ITask = {
@@ -57,6 +56,17 @@ const slice = createSlice({
     project_tracker(state, action) {},
     task(state, action) {},
     meeting_notes(state, action) {},
+    orderProjects (state, action ) {
+      if(action.payload.active && action.payload.over &&state.data){
+        const activeInd =state.data.find(pro =>pro.id ===action.payload.active);
+        const overInd   = state.data.find(pro =>pro.id ===action.payload.over);
+        const temp = activeInd!.order;
+        activeInd!.order=overInd!.order;
+        overInd!.order =temp
+        state.data.sort((a,b)=>a.order-b.order) ;
+        
+      }
+    }
   },
   extraReducers: (builder) => {
     builder
@@ -70,9 +80,11 @@ const slice = createSlice({
         userProjects.fulfilled,
         (state, action: PayloadAction<ITaskData[]>) => {
           state.loading = false;
+          state.error = false;
+          state.errorMsg = undefined;
           state.data = action.payload;
           return state;
-        }
+        },
       )
       .addCase(userProjects.rejected, (state, action) => {
         state.loading = false;
@@ -85,5 +97,5 @@ const slice = createSlice({
 });
 
 const projectReducer = slice.reducer;
-export const { reorderProjects } = slice.actions;
+export const { reorderProjects ,orderProjects } = slice.actions;
 export default projectReducer;
