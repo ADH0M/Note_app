@@ -3,6 +3,7 @@ import { registerAction } from "@/lib/actions/auth-action";
 import Link from "next/link";
 import { useActionState, useEffect } from "react";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 
 const initialState: {
   message: string;
@@ -19,136 +20,205 @@ const initialState: {
 export default function Signup() {
   const [state, formAction, isPending] = useActionState(
     registerAction,
-    initialState
+    initialState,
   );
 
   useEffect(() => {
+
     if (state.errors?.general) {
       toast.error(state.errors.general);
+    }else{
+      toast.success('creaet new account succesfull ')
     }
   }, [state.errors?.general]);
 
   return (
-    <div className="w-full flex flex-col items-center justify-center max-h-screen gap-10 p-4 ">
-      <div className="w-full flex justify-center   h-full ">
-        <div className="bg-card w-full sm:w-1/2 md:w-1/3 rounded-2xl shadow-xl  overflow-hidden ">
-          <div className="bg-linear-to-r from-accent to-accent-foreground p-4 text-card-foreground text-center">
-            <h2 className="text-2xl font-bold">Create New Account</h2>
-            <p className="mt-2">Fill in the details to create a new account</p>
+    <div
+      className=" overflow-auto h-full w-full flex flex-col items-center 
+    overflow-y-auto
+    justify-center bg-accent p-4"
+    >
+      <div className="w-full flex justify-center h-full   ">
+        <div
+          className="bg-card h-full w-full sm:w-[500px]  rounded-lg shadow-sm border
+         border-border overflow-hidden"
+        >
+          {/* Header */}
+          <div
+            className="bg-linear-to-r from-primary/10 to-primary/5 p-6 
+          border-b border-border"
+          >
+            <h2 className="text-2xl font-bold font-serif text-foreground">
+              Create New Account
+            </h2>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Fill in the details to create a new account
+            </p>
           </div>
 
-          {state.errors?.general && (
-            <div className="bg-red-50 border-l-4 border-red-500 p-4 mx-6 mt-4 text-red-700 text-sm">
-              {state.errors.general}
-            </div>
-          )}
+          {/* General Error */}
+          <div className="h-8">
+            {state.errors?.general && (
+              <div className="h-full bg-destructive/10 border-l-4  border-destructive p-3 mx-6 mt-2 rounded">
+                <p className="text-destructive text-xs">
+                  {state.errors.general}
+                </p>
+              </div>
+            )}
+          </div>
 
-          <form
-            action={formAction}
-            className="p-4  flex justify-center flex-col items-center border border-border"
-          >
+          {/* Form */}
+          <form action={formAction} className="px-6 pb-2 pt-1 space-y-2">
             {/* Username */}
-            <div className="md:w-[90%] w-full  ">
-              <label htmlFor="username" className="auth-label ">
+            <div className="space-y-1">
+              <label
+                htmlFor="username"
+                className="text-xs font-medium text-foreground"
+              >
                 Username
               </label>
               <input
                 type="text"
                 id="username"
                 name="username"
-                className="auth-input"
-                placeholder="Username"
+                className={cn(
+                  "w-full px-3 py-2 bg-background border border-border rounded-md",
+                  "focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent",
+                  "text-foreground placeholder:text-muted-foreground transition-colors",
+                  state.errors?.username &&
+                    "border-destructive focus:ring-destructive",
+                )}
+                placeholder="johndoe"
               />
-              <p className="auth-notvalid">
-                {state.errors?.username && state.errors.username[0]}
-              </p>
+              {state.errors?.username && (
+                <p className="text-xs text-destructive">
+                  {state.errors.username[0]}
+                </p>
+              )}
             </div>
 
             {/* Email */}
-            <div className="md:w-[90%] w-full">
-              <label htmlFor="email" className="auth-label ">
+            <div className="space-y-1">
+              <label
+                htmlFor="email"
+                className="text-xs font-medium text-foreground"
+              >
                 Email Address
               </label>
               <input
                 type="email"
                 id="email"
                 name="email"
-                className="auth-input"
-                placeholder="example@email.com"
+                className={cn(
+                  "w-full px-3 py-2 bg-background border border-border rounded-md",
+                  "focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent",
+                  "text-foreground placeholder:text-muted-foreground transition-colors",
+                  state.errors?.email &&
+                    "border-destructive focus:ring-destructive",
+                )}
+                placeholder="hello@example.com"
               />
-              <p className="auth-notvalid">
-                {state.errors?.email && state.errors.email[0]}
-              </p>
+              {state.errors?.email && (
+                <p className="text-xs text-destructive">
+                  {state.errors.email[0]}
+                </p>
+              )}
             </div>
 
             {/* Password */}
-            <div className="md:w-[90%] w-full">
-              <label htmlFor="password" className="auth-label">
+            <div className="space-y-1.5">
+              <label
+                htmlFor="password"
+                className="text-xs font-medium text-foreground"
+              >
                 Password
               </label>
               <input
                 type="password"
                 id="password"
                 name="password"
-                className="auth-input"
-                placeholder="********"
+                className={cn(
+                  "w-full px-3 py-2 bg-background border border-border rounded-md",
+                  "focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent",
+                  "text-foreground placeholder:text-muted-foreground transition-colors",
+                  state.errors?.password &&
+                    "border-destructive focus:ring-destructive",
+                )}
+                placeholder="••••••••"
                 autoComplete="new-password"
               />
-              <p className="auth-notvalid">
-                {state.errors?.password && state.errors.password[0]}
-              </p>
+              {state.errors?.password && (
+                <p className="text-xs text-destructive">
+                  {state.errors.password[0]}
+                </p>
+              )}
             </div>
 
             {/* Confirm Password */}
-            <div className="md:w-[90%] w-full">
-              <label htmlFor="confirmPassword" className="auth-label">
+            <div className="space-y-1.5">
+              <label
+                htmlFor="confirmPassword"
+                className="text-xs font-medium text-foreground"
+              >
                 Confirm Password
               </label>
               <input
                 type="password"
                 id="confirmPassword"
                 name="confirmPassword"
-                className="auth-input"
-                placeholder="********"
+                className={cn(
+                  "w-full px-3 py-2 bg-background border border-border rounded-md",
+                  "focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent",
+                  "text-foreground placeholder:text-muted-foreground transition-colors",
+                  state.errors?.confirmPassword &&
+                    "border-destructive focus:ring-destructive",
+                )}
+                placeholder="••••••••"
                 autoComplete="new-password"
               />
-
-              <p className="auth-notvalid">
-                {state.errors?.confirmPassword &&
-                  state.errors.confirmPassword[0]}
-              </p>
+              {state.errors?.confirmPassword && (
+                <p className="text-xs text-destructive">
+                  {state.errors.confirmPassword[0]}
+                </p>
+              )}
             </div>
 
-            {/* Terms */}
-            <div className="flex items-start mb-1">
+            {/* Terms and Conditions */}
+            <div className="flex items-center gap-2">
               <input
                 id="terms"
                 name="terms"
                 type="checkbox"
                 required
-                className="m-1 h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                className="w-4 h-4 rounded border-border text-primary focus:ring-primary focus:ring-2 bg-background"
               />
-              <label
-                htmlFor="terms"
-                className="mr-2 text-sm text-gray-600 ml-2"
-              >
+              <label htmlFor="terms" className="text-xs text-muted-foreground">
                 I agree to the{" "}
-                <a href="#" className="text-accent-foreground hover:underline">
+                <a
+                  href="#"
+                  className="text-primary hover:underline transition-colors"
+                >
                   Terms and Conditions
                 </a>
               </label>
             </div>
 
-            {/* Submit */}
+            {/* Submit Button */}
             <button
               type="submit"
-              className="w-full md:w-[90%] text-sm  bg-linear-to-t from-accent to-accent-foreground 
-              text-white rounded-lg py-3 px-4 font-normal hover:bg-accent transition duration-300"
+              disabled={isPending}
+              className={cn(
+                "w-full bg-primary text-primary-foreground rounded-lg py-2.5 px-4",
+                "font-medium text-xs transition-colors",
+                "hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2",
+                "disabled:opacity-50 disabled:cursor-not-allowed",
+                "flex items-center justify-center gap-2",
+              )}
             >
               {isPending ? (
-                <span className="flex items-center justify-center">
+                <>
                   <svg
-                    className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                    className="animate-spin h-4 w-4"
                     xmlns="http://www.w3.org/2000/svg"
                     fill="none"
                     viewBox="0 0 24 24"
@@ -160,25 +230,26 @@ export default function Signup() {
                       r="10"
                       stroke="currentColor"
                       strokeWidth="4"
-                    ></circle>
+                    />
                     <path
                       className="opacity-75"
                       fill="currentColor"
                       d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    ></path>
+                    />
                   </svg>
-                  <span className="mx-2 block">loading create acount</span>
-                </span>
+                  <span>Creating account...</span>
+                </>
               ) : (
                 "Create Account"
               )}
             </button>
 
-            <p className="text-sm text-center text-gray-600">
+            {/* Login Link */}
+            <p className="text-center text-xs text-muted-foreground">
               Already have an account?{" "}
               <Link
                 href="/login"
-                className="text-accent-foreground hover:underline font-medium"
+                className="text-primary hover:underline font-medium transition-colors"
               >
                 Log In
               </Link>

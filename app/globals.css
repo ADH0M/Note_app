@@ -44,15 +44,20 @@
   --shadow-color: rgba(29, 161, 242, 0.15);
   --shadow-2xs: 0px 2px 0px 0px hsl(202.8169 89.1213% 53.1373% / 0);
   --shadow-xs: 0px 2px 0px 0px hsl(202.8169 89.1213% 53.1373% / 0);
-  --shadow-sm: 0px 2px 0px 0px hsl(202.8169 89.1213% 53.1373% / 0),
+  --shadow-sm:
+    0px 2px 0px 0px hsl(202.8169 89.1213% 53.1373% / 0),
     0px 1px 2px -1px hsl(202.8169 89.1213% 53.1373% / 0);
-  --shadow: 0px 2px 0px 0px hsl(202.8169 89.1213% 53.1373% / 0),
+  --shadow:
+    0px 2px 0px 0px hsl(202.8169 89.1213% 53.1373% / 0),
     0px 1px 2px -1px hsl(202.8169 89.1213% 53.1373% / 0);
-  --shadow-md: 0px 2px 0px 0px hsl(202.8169 89.1213% 53.1373% / 0),
+  --shadow-md:
+    0px 2px 0px 0px hsl(202.8169 89.1213% 53.1373% / 0),
     0px 2px 4px -1px hsl(202.8169 89.1213% 53.1373% / 0);
-  --shadow-lg: 0px 2px 0px 0px hsl(202.8169 89.1213% 53.1373% / 0),
+  --shadow-lg:
+    0px 2px 0px 0px hsl(202.8169 89.1213% 53.1373% / 0),
     0px 4px 6px -1px hsl(202.8169 89.1213% 53.1373% / 0);
-  --shadow-xl: 0px 2px 0px 0px hsl(202.8169 89.1213% 53.1373% / 0),
+  --shadow-xl:
+    0px 2px 0px 0px hsl(202.8169 89.1213% 53.1373% / 0),
     0px 8px 10px -1px hsl(202.8169 89.1213% 53.1373% / 0);
   --shadow-2xl: 0px 2px 0px 0px hsl(202.8169 89.1213% 53.1373% / 0);
   --tracking-normal: 0em;
@@ -104,15 +109,20 @@
   --shadow-color: rgba(29, 161, 242, 0.25);
   --shadow-2xs: 0px 2px 0px 0px hsl(202.8169 89.1213% 53.1373% / 0);
   --shadow-xs: 0px 2px 0px 0px hsl(202.8169 89.1213% 53.1373% / 0);
-  --shadow-sm: 0px 2px 0px 0px hsl(202.8169 89.1213% 53.1373% / 0),
+  --shadow-sm:
+    0px 2px 0px 0px hsl(202.8169 89.1213% 53.1373% / 0),
     0px 1px 2px -1px hsl(202.8169 89.1213% 53.1373% / 0);
-  --shadow: 0px 2px 0px 0px hsl(202.8169 89.1213% 53.1373% / 0),
+  --shadow:
+    0px 2px 0px 0px hsl(202.8169 89.1213% 53.1373% / 0),
     0px 1px 2px -1px hsl(202.8169 89.1213% 53.1373% / 0);
-  --shadow-md: 0px 2px 0px 0px hsl(202.8169 89.1213% 53.1373% / 0),
+  --shadow-md:
+    0px 2px 0px 0px hsl(202.8169 89.1213% 53.1373% / 0),
     0px 2px 4px -1px hsl(202.8169 89.1213% 53.1373% / 0);
-  --shadow-lg: 0px 2px 0px 0px hsl(202.8169 89.1213% 53.1373% / 0),
+  --shadow-lg:
+    0px 2px 0px 0px hsl(202.8169 89.1213% 53.1373% / 0),
     0px 4px 6px -1px hsl(202.8169 89.1213% 53.1373% / 0);
-  --shadow-xl: 0px 2px 0px 0px hsl(202.8169 89.1213% 53.1373% / 0),
+  --shadow-xl:
+    0px 2px 0px 0px hsl(202.8169 89.1213% 53.1373% / 0),
     0px 8px 10px -1px hsl(202.8169 89.1213% 53.1373% / 0);
   --shadow-2xl: 0px 2px 0px 0px hsl(202.8169 89.1213% 53.1373% / 0);
 }
@@ -191,13 +201,50 @@ body {
   }
 
   .auth-notvalid {
-    @apply block h-5  text-destructive text-xs text-center w-full ;
+    @apply block h-5  text-destructive text-xs text-center w-full;
+  }
+
+  .auth-label {
+    @apply text-sm font-medium text-foreground block mb-1.5;
+  }
+
+  .auth-input {
+    @apply w-full px-3 py-2 bg-background border border-border rounded-md;
+    @apply focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent;
+    @apply text-foreground placeholder:text-muted-foreground;
+    @apply transition-colors duration-200;
+  }
+
+  .auth-input.error {
+    @apply border-destructive focus:ring-destructive;
+  }
+
+  .auth-notvalid {
+    @apply text-sm text-destructive mt-1;
+  }
+
+  .auth-checkbox {
+    @apply w-4 h-4 rounded border-border text-primary;
+    @apply focus:ring-primary focus:ring-2 bg-background;
+  }
+
+  .auth-button {
+    @apply w-full bg-primary text-primary-foreground rounded-lg py-2.5 px-4;
+    @apply font-medium text-sm transition-colors;
+    @apply hover:bg-primary/90 focus:outline-none focus:ring-2;
+    @apply focus:ring-primary focus:ring-offset-2;
+    @apply disabled:opacity-50 disabled:cursor-not-allowed;
   }
 }
 /* Optional: Add this for 404 page animations */
 @keyframes float {
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-10px); }
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
 }
 
 .not-found-float {
